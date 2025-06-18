@@ -5,13 +5,13 @@
 
 ## 🐧 Overview
 
-This is a free and open-source Linux distribution that blends the philosophies and strengths of NixOS and Artix Linux. It is designed for users who value transparency, control, and reproducibility—offering a systemd-free experience with a fully declarative approach to configuration and package management.
+This is a free and open-source Linux distribution that blends the philosophies and strengths of NixOS and Artix Linux. It is designed for users who value transparency, control, and reproducibility, offering a systemd-free experience with a fully declarative approach to configuration and package management.
 
 At the core of this distribution is a strictly declarative package manager, inspired by Nix flakes, but with a more opinionated and streamlined design. Rather than supporting imperative package installation or multiple configuration styles, this system embraces one clear way to manage packages: declaratively through TOML files. This choice prioritizes simplicity, consistency, and reproducibility.
 
-Unlike traditional distros that host their own package repositories—which can become a maintenance burden over time—this system adopts a "captain of your own ship" philosophy. Users are empowered and expected to define and manage their own "flake" sources and configurations. This avoids the complexity and sustainability challenges of centralized package hosting.
+Unlike traditional distros that host their own package repositories which can become a maintenance burden over time. This system adopts a "captain of your own ship" philosophy. Users are empowered and expected to define and manage their own "flake" sources and configurations. This avoids the complexity and sustainability challenges of centralized package hosting.
 
-Security is a key priority. The distribution comes with ClamAV (antivirus) and Suricata (intrusion detection/prevention system) preconfigured with sensible defaults, helping users deploy secure systems out of the box.
+Security is a key priority. The distribution comes with ClamAV (antivirus) and Suricata (IDS/IPS) preconfigured with sensible defaults, helping users deploy secure systems out of the box.
 
 ---
 
@@ -21,6 +21,7 @@ This project is currently in the design and planning phase. Development will beg
 
 In the meantime, we're focusing on:
 - Finalizing the distribution's goals and scope
+- Applying appropriate licensing to respective repos
 - Designing the declarative TOML-based configuration system
 - Laying the groundwork for package and security tooling
 - Preparing for sustainable long-term development
@@ -68,5 +69,15 @@ Special thanks to the communities of **NixOS** and **Artix Linux** for their fou
 At this stage, contributions are welcome in the form of design ideas, documentation, or discussions. Feel free to open issues or contact the maintainers through the repository’s issue tracker.
 
 We look forward to building this project together!
+
+## 📬 Contact
+
+We haven’t set up formal contact channels yet. In the meantime, you can:
+
+- Open an issue in this repository for questions or suggestions
+- Reach out via GitHub discussions (once enabled)
+- Email/contact info will be added here once available
+
+Thanks for your interest and support!
 ---
 -->
