@@ -1,83 +1,91 @@
 <div align="center">
-  <img src="" width="100%" alt="img">
-  <h1>Distro Name Placeholder</h1>
+  <img src="" width="100%" alt="NexisOS Logo">
 </div>
 
 ## 🐧 Overview
 
-This is a free and open-source Linux distribution that blends the philosophies and strengths of NixOS and Artix Linux. It is designed for users who value transparency, control, and reproducibility, offering a systemd-free experience with a fully declarative approach to configuration and package management.
+**NexisOS** is a free and open-source Linux distribution that blends the philosophies and strengths of **NixOS** and **Artix Linux**. It is designed for users who value transparency, control, and reproducibility, offering a fully declarative configuration system and using **Dinit** as its init system.
 
-At the core of this distribution is a strictly declarative package manager, inspired by Nix flakes, but with a more opinionated and streamlined design. Rather than supporting imperative package installation or multiple configuration styles, this system embraces one clear way to manage packages: declaratively through TOML files. This choice prioritizes simplicity, consistency, and reproducibility.
+At the heart of NexisOS is a strictly declarative package manager, inspired by **Nix flakes**, but with a more opinionated and streamlined design. Instead of supporting imperative package installations or multiple configuration styles, NexisOS embraces a single, consistent approach: packages are managed declaratively via **TOML** files. This design prioritizes simplicity, consistency, and reproducibility.
 
-Unlike traditional distros that host their own package repositories which can become a maintenance burden over time. This system adopts a "captain of your own ship" philosophy. Users are empowered and expected to define and manage their own "flake" sources and configurations. This avoids the complexity and sustainability challenges of centralized package hosting.
+Unlike traditional distributions that maintain central package repositories, which can become maintenance heavy over time, NexisOS encourages a “**captain of your own ship**” philosophy. Users define and manage their own flake sources and configurations, reducing central complexity and promoting sustainability.
 
-Security is a key priority. The distribution comes with ClamAV (antivirus) and Suricata (IDS/IPS) preconfigured with sensible defaults, helping users deploy secure systems out of the box.
+Security is a key priority. NexisOS ships with **ClamAV** (antivirus) and **Suricata** (IDS/IPS), preconfigured with sensible defaults to help users deploy secure systems out of the box.
+
+---
+
+## 🔽 Download ISO
+
+You can try the latest ISO build of NexisOS by downloading it from SourceForge:
+
+👉 [Download NexisOS ISO](https://sourceforge.net/projects/nexisos/files/latest/download)
+
+> ⚠️ *Note: The ISO is currently experimental and intended for testing and feedback. Expect rapid iteration and updates.*
 
 ---
 
 ## 🚧 Project Status
 
-This project is currently in the design and planning phase. Development will begin after core architectural decisions are finalized and the trademark process is complete.
+NexisOS is currently in the **design and planning phase**. Development will begin after core architectural decisions are finalized and trademark and legal preparations are complete.
 
-In the meantime, we're focusing on:
-- Finalizing the distribution's goals and scope
-- Applying appropriate licensing to respective repos
-- Designing the declarative TOML-based configuration system
-- Laying the groundwork for package and security tooling
-- Preparing for sustainable long-term development
+### In progress:
+- Defining the distribution’s scope, goals, and values
+- Applying appropriate licensing to repositories
+- Designing the TOML-based configuration system
+- Developing security tooling and package infrastructure
+- Planning for long-term sustainability and funding
 
-Stay tuned, and feel free to watch or star the repository to follow updates as they come.
+Stay tuned. Star or watch the repo to follow progress as it evolves.
 
 ---
 
-## 🔍 Description
+## 🔍 Design Inspiration
 
-This distribution takes inspiration from both:
+NexisOS draws from the best parts of:
 
-- **[NixOS](https://nixos.org)** – Known for its declarative configuration, atomic upgrades, and package management through the Nix language.
-- **[Artix Linux](https://artixlinux.org)** – A systemd-free Arch-based distribution offering alternative init systems like OpenRC, runit, and s6.
+- **[NixOS](https://nixos.org)** for declarative system configuration, atomic upgrades, and reproducible builds
+- **[Artix Linux](https://artixlinux.org)** for its minimalist, systemd-free architecture and alternative init systems
 
-The goal is to merge these ideas into a cohesive operating system that values transparency, reproducibility, and user control.
+Unlike Artix, NexisOS will use **[Dinit](https://github.com/dimitri/dinit)** as its default init system, chosen for its simplicity, modern design, and clean dependency model.
+
+Our goal is to merge these concepts into a focused operating system built on clarity, reproducibility, and user control.
 
 ---
 
 ## ⚖️ Disclaimer
 
-This is an independent project. It is **not officially affiliated with, endorsed by, or sponsored by** the Linux Foundation, NixOS Foundation, or Artix Linux team.
+This is an independent community project. It is **not officially affiliated with**, **endorsed by**, or **sponsored by** the Linux Foundation, NixOS Foundation, or Artix Linux team.
 
 ---
 
 ## 📂 Repositories
 
-Browse the organization to explore the various components that make up the distribution, including:
+Explore the NexisOS GitHub organization to find core components of the distribution, including:
 
-- Configuration modules
-- Package overlays
+- Declarative configuration modules
 - ISO building scripts
-- Documentation
+- Package overlay definitions
+- System documentation
 
 ---
 
 ## 🙏 Acknowledgments
 
-Special thanks to the communities of **NixOS** and **Artix Linux** for their foundational work and open-source contributions. This project would not be possible without them.
+Special thanks to the **NixOS** and **Artix Linux** communities for their foundational work and open-source contributions. NexisOS would not be possible without them.
 
 ---
 <!--
 ## 🤝 How to Contribute
 
-At this stage, contributions are welcome in the form of design ideas, documentation, or discussions. Feel free to open issues or contact the maintainers through the repository’s issue tracker.
+We welcome early input and discussion. Contributions are encouraged in the form of design suggestions, documentation, or architectural discussion.
 
-We look forward to building this project together!
+Open an issue to propose ideas or improvements.
 
 ## 📬 Contact
 
-We haven’t set up formal contact channels yet. In the meantime, you can:
+We're currently setting up contact and community channels.
 
-- Open an issue in this repository for questions or suggestions
-- Reach out via GitHub discussions (once enabled)
-- Email/contact info will be added here once available
-
-Thanks for your interest and support!
----
+Until then:
+- Use GitHub issues for feedback
+- GitHub Discussions will be enabled soon
 -->
