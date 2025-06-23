@@ -1,5 +1,5 @@
 <div align="center">
-  <img src="" width="100%" alt="NexisOS Logo">
+  <img src="https://github.com/NexisOS/.github/blob/main/NexisOS2.png" width="50%" alt="NexisOS Logo">
 </div>
 
 ## 🐧 Overview
