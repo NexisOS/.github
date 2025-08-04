@@ -10,7 +10,7 @@ At the heart of NexisOS is a strictly declarative package manager, inspired by *
 
 Unlike traditional distributions that maintain central package repositories, which can become maintenance heavy over time, NexisOS encourages a “**captain of your own ship**” philosophy. Users define and manage their own flake sources and configurations, reducing central complexity and promoting sustainability.
 
-Security is a key priority. NexisOS ships with **ClamAV** (antivirus) and **Suricata** (IDS/IPS), preconfigured with sensible defaults to help users deploy secure systems out of the box.
+Security is a foundational priority for NexisOS. The distribution aims to provide comprehensive Linux security coverage by integrating a suite of endpoint protection tools and monitoring solutions. Currently, NexisOS plans to include and preconfigure security components such as **firewalld** (firewall management), **ClamAV** (antivirus), **Maldet** (Linux malware detector), **Falco** (runtime security and behavioral monitoring), and **Suricata** (intrusion detection and prevention system). These tools work together to provide layered, out-of-the-box protection, helping users deploy secure and resilient systems with ease.
 
 ---
 
@@ -74,18 +74,27 @@ Explore the NexisOS GitHub organization to find core components of the distribut
 Special thanks to the **NixOS** and **Artix Linux** communities for their foundational work and open-source contributions. NexisOS would not be possible without them.
 
 ---
-<!--
-## 🤝 How to Contribute
 
-We welcome early input and discussion. Contributions are encouraged in the form of design suggestions, documentation, or architectural discussion.
+## 📢 Community & Support
 
-Open an issue to propose ideas or improvements.
+NexisOS is a personal project led and developed by a single maintainer. Community channels, including forums and chat, are coming soon.
 
-## 📬 Contact
+In the meantime:
 
-We're currently setting up contact and community channels.
+- Please use [GitHub Issues](https://github.com/NexisOS/issues) to report bugs, request features, or share ideas.
+- Discussions will be enabled shortly to facilitate design conversations and collaboration.
+- Stay tuned for announcements about the official community chat (likely on Matrix, Discord, or IRC).
 
-Until then:
-- Use GitHub issues for feedback
-- GitHub Discussions will be enabled soon
--->
+Your feedback and participation are highly appreciated and essential to shaping NexisOS’s future. Thank you for your patience and support during this early phase!
+
+---
+
+## 📬 Contact the Maintainer
+
+If you would like to share ideas, provide feedback, or get in touch directly, you can email the maintainer of NexisOS at:
+
+**[kyle.gortych.dev@gmail.com](mailto:kyle.gortych.dev@gmail.com)**
+
+Please note that as the sole maintainer, response times may vary. For general issues and feature requests, we encourage using GitHub Issues or Discussions once available.
+
+---
