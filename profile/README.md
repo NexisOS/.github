@@ -54,7 +54,18 @@ Our goal is to merge these concepts into a focused operating system built on cla
 
 ## ⚖️ Disclaimer
 
-This is an independent community project. It is **not officially affiliated with**, **endorsed by**, or **sponsored by** the Linux Foundation, NixOS Foundation, or Artix Linux team.
+This is an independent, community-driven project, currently maintained by an individual developer. It is **not officially affiliated with, endorsed by, or sponsored by**:
+
+- The Linux Foundation,
+- NixOS Foundation,
+- Artix Linux project,
+- Dinit maintainers,
+- OS-Tree developers,
+- or the authors of any additional tools or packages used in NexisOS (e.g., firewalld, ClamAV, Maldet, Falco, Suricata).
+
+All product names, trademarks, and registered trademarks are property of their respective owners. Their use in this project is for identification, compatibility, and reference only, and does not imply any official endorsement.
+
+NexisOS builds upon and is inspired by the work of many open source projects and contributors. Please see the [Acknowledgments](#acknowledgments) section for details.
 
 ---
 
