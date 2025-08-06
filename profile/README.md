@@ -4,23 +4,23 @@
 
 ## 🐧 Overview
 
-**NexisOS** is a free and open-source Linux distribution that blends the philosophies and strengths of **NixOS** and **Artix Linux**. It is designed for users who value transparency, control, and reproducibility, offering a fully declarative configuration system and using **Dinit** as its init system.
+**NexisOS** is a free and open-source Linux distribution designed to offer complete transparency, control, and reproducibility. Built on **OS-Tree** and leveraging a custom **Rust-based system level declarative package manager**, NexisOS introduces a fully declarative configuration system inspired by **NixOS** and **Artix Linux**, but with a unique approach that blends both flexibility and simplicity.
 
-At the heart of NexisOS is a strictly declarative package manager, inspired by **Nix flakes**, but with a more opinionated and streamlined design. Instead of supporting imperative package installations or multiple configuration styles, NexisOS embraces a single, consistent approach: packages are managed declaratively via **TOML** files. This design prioritizes simplicity, consistency, and reproducibility.
+At the core of NexisOS is a **strictly declarative package management** system that integrates seamlessly with the system configuration, utilizing **TOML** files for managing packages and system settings. This unified approach ensures that users can declare both their package dependencies and configuration changes declaratively, reducing the risk of configuration drift and ensuring reproducible system setups.
 
-Unlike traditional distributions that maintain central package repositories, which can become maintenance heavy over time, NexisOS encourages a “**captain of your own ship**” philosophy. Users define and manage their own flake sources and configurations, reducing central complexity and promoting sustainability.
+Unlike traditional Linux distributions, NexisOS does not rely on central repositories, which helps minimize long-term maintenance costs. Instead, the user defines their own flake sources and configurations, bringing a "captain of your own ship" philosophy to system management.
 
-Security is a foundational priority for NexisOS. The distribution aims to provide comprehensive Linux security coverage by integrating a suite of endpoint protection tools and monitoring solutions. Currently, NexisOS plans to include and preconfigure security components such as **firewalld** (firewall management), **ClamAV** (antivirus), **Maldet** (Linux malware detector), **Falco** (runtime security and behavioral monitoring), and **Suricata** (intrusion detection and prevention system). These tools work together to provide layered, out-of-the-box protection, helping users deploy secure and resilient systems with ease.
+Security is a foundational priority for NexisOS. The distribution ships with several pre-configured security tools such as **firewalld**, **ClamAV**, **Maldet**, **Falco**, and **Suricata** for endpoint protection, malware detection, runtime security monitoring, and intrusion prevention, helping to create secure and resilient systems right out of the box.
 
 ---
 
 ## 🔽 Download ISO
 
-You can try the latest ISO build of NexisOS by downloading it from SourceForge:
+You can access the NexisOS project page on SourceForge. Please note that while the link is live, the ISO has not yet been built. It will be added once the first build is ready:
 
 👉 [Download NexisOS ISO](https://sourceforge.net/projects/nexisos/files/latest/download)
 
-> ⚠️ *Note: The ISO is currently experimental and intended for testing and feedback. Expect rapid iteration and updates.*
+> ⚠️ *Note: The ISO versions in the range of v0.x.x are currently experimental and intended for testing and feedback. Expect rapid iteration and updates.*
 
 ---
 
@@ -71,7 +71,25 @@ Explore the NexisOS GitHub organization to find core components of the distribut
 
 ## 🙏 Acknowledgments
 
-Special thanks to the **NixOS** and **Artix Linux** communities for their foundational work and open-source contributions. NexisOS would not be possible without them.
+NexisOS is built upon the contributions of the open-source community. Special thanks to:
+
+    The NixOS community for pioneering declarative system configurations, atomic upgrades, and reproducible builds, which directly inspired NexisOS’s design.
+
+    The Artix Linux team for their systemd-free, minimalist approach to Linux, which influenced our choice of Dinit as the default init system.
+
+    OS-Tree for providing the powerful system image management framework at the core of NexisOS’s declarative package management.
+
+    Dinit for its simplicity, modern design, and clean dependency model, which enables flexible and efficient service management.
+
+    The Rust community for developing the language that powers NexisOS’s declarative package manager, chosen for its performance and safety.
+
+    The security-focused open-source projects (e.g., firewalld, ClamAV, Maldet, Falco, Suricata) for tools that enhance NexisOS’s built-in security.
+
+    The broader Linux and open-source communities for their invaluable contributions to the tools and libraries that make projects like NexisOS possible.
+
+NexisOS would not be possible without the foundational work of the open-source ecosystem. The project is deeply grateful for the contributions that have made this work possible, and I, as the founder of NexisOS, personally appreciate the support and inspiration provided by all involved.
+
+As development progresses, we look forward to collaborating with future maintainers and contributors to build on this foundation and create a robust and sustainable operating system for all.
 
 ---
 
@@ -89,9 +107,9 @@ Your feedback and participation are highly appreciated and essential to shaping 
 
 ---
 
-## 📬 Contact the Maintainer
+## 📬 Contact the Creator
 
-If you would like to share ideas, provide feedback, or get in touch directly, you can email the maintainer of NexisOS at:
+If you'd like to share ideas, provide feedback, or get in touch directly, feel free to email me at:
 
 **[kyle.gortych.dev@gmail.com](mailto:kyle.gortych.dev@gmail.com)**
 
