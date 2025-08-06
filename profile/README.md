@@ -73,19 +73,13 @@ Explore the NexisOS GitHub organization to find core components of the distribut
 
 NexisOS is built upon the contributions of the open-source community. Special thanks to:
 
-    The NixOS community for pioneering declarative system configurations, atomic upgrades, and reproducible builds, which directly inspired NexisOS’s design.
-
-    The Artix Linux team for their systemd-free, minimalist approach to Linux, which influenced our choice of Dinit as the default init system.
-
-    OS-Tree for providing the powerful system image management framework at the core of NexisOS’s declarative package management.
-
-    Dinit for its simplicity, modern design, and clean dependency model, which enables flexible and efficient service management.
-
-    The Rust community for developing the language that powers NexisOS’s declarative package manager, chosen for its performance and safety.
-
-    The security-focused open-source projects (e.g., firewalld, ClamAV, Maldet, Falco, Suricata) for tools that enhance NexisOS’s built-in security.
-
-    The broader Linux and open-source communities for their invaluable contributions to the tools and libraries that make projects like NexisOS possible.
+- The NixOS community for pioneering declarative system configurations, atomic upgrades, and reproducible builds, which directly inspired NexisOS’s design.
+- The Artix Linux team for their systemd-free, minimalist approach to Linux, which influenced our choice of Dinit as the default init system.
+- OS-Tree for providing the powerful system image management framework at the core of NexisOS’s declarative package management.
+- Dinit for its simplicity, modern design, and clean dependency model, which enables flexible and efficient service management.
+- The Rust community for developing the language that powers NexisOS’s declarative package manager, chosen for its performance and safety.
+- The security-focused open-source projects (e.g., firewalld, ClamAV, Maldet, Falco, Suricata) for tools that enhance NexisOS’s built-in security.
+- The broader Linux and open-source communities for their invaluable contributions to the tools and libraries that make projects like NexisOS possible.
 
 NexisOS would not be possible without the foundational work of the open-source ecosystem. The project is deeply grateful for the contributions that have made this work possible, and I, as the founder of NexisOS, personally appreciate the support and inspiration provided by all involved.
 
