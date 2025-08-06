@@ -14,7 +14,8 @@ Security is a foundational priority for NexisOS. The distribution ships with sev
 
 ---
 
-## 🔽 Download ISO
+<details>
+<summary>🔽 Download ISO</summary>
 
 You can access the NexisOS project page on SourceForge. Please note that while the link is live, the ISO has not yet been built. It will be added once the first build is ready:
 
@@ -22,9 +23,11 @@ You can access the NexisOS project page on SourceForge. Please note that while t
 
 > ⚠️ *Note: The ISO versions in the range of v0.x.x are currently experimental and intended for testing and feedback. Expect rapid iteration and updates.*
 
----
+</details>
 
-## 🚧 Project Status
+<details>
+
+<summary>🚧 Project Status</summary>
 
 NexisOS is currently in the **design and planning phase**. Development will begin after core architectural decisions are finalized and trademark and legal preparations are complete.
 
@@ -37,9 +40,11 @@ NexisOS is currently in the **design and planning phase**. Development will begi
 
 Stay tuned. Star or watch the repo to follow progress as it evolves.
 
----
+</details>
 
-## 🔍 Design Inspiration
+<details>
+
+<summary>🔍 Design Inspiration</summary>
 
 NexisOS draws from the best parts of:
 
@@ -50,9 +55,11 @@ Unlike Artix, NexisOS will use **[Dinit](https://github.com/dimitri/dinit)** as 
 
 Our goal is to merge these concepts into a focused operating system built on clarity, reproducibility, and user control.
 
----
+</details>
 
-## ⚖️ Disclaimer
+<details>
+
+<summary>⚖️ Disclaimer</summary>
 
 This is an independent, community-driven project, currently maintained by an individual developer. It is **not officially affiliated with, endorsed by, or sponsored by**:
 
@@ -67,9 +74,11 @@ All product names, trademarks, and registered trademarks are property of their r
 
 NexisOS builds upon and is inspired by the work of many open source projects and contributors. Please see the [Acknowledgments](#acknowledgments) section for details.
 
----
+</details>
 
-## 📂 Repositories
+<details>
+
+<summary>📂 Repositories</summary>
 
 Explore the NexisOS GitHub organization to find core components of the distribution, including:
 
@@ -78,9 +87,11 @@ Explore the NexisOS GitHub organization to find core components of the distribut
 - Package overlay definitions
 - System documentation
 
----
+</details>
 
-## 🙏 Acknowledgments
+<details>
+
+<summary>🙏 Acknowledgments</summary>
 
 NexisOS is built upon the contributions of the open-source community. Special thanks to:
 
@@ -96,9 +107,11 @@ NexisOS would not be possible without the foundational work of the open-source e
 
 As development progresses, we look forward to collaborating with future maintainers and contributors to build on this foundation and create a robust and sustainable operating system for all.
 
----
+</details>
 
-## 📢 Community & Support
+<details>
+
+<summary>📢 Community & Support</summary>
 
 NexisOS is a personal project led and developed by a single maintainer. Community channels, including forums and chat, are coming soon.
 
@@ -110,9 +123,11 @@ In the meantime:
 
 Your feedback and participation are highly appreciated and essential to shaping NexisOS’s future. Thank you for your patience and support during this early phase!
 
----
+</details>
 
-## 📬 Contact the Creator
+<details>
+
+<summary>📬 Contact the Creator</summary>
 
 If you'd like to share ideas, provide feedback, or get in touch directly, feel free to email me at:
 
@@ -120,4 +135,4 @@ If you'd like to share ideas, provide feedback, or get in touch directly, feel f
 
 Please note that as the sole maintainer, response times may vary. For general issues and feature requests, we encourage using GitHub Issues or Discussions once available.
 
----
+</details>
