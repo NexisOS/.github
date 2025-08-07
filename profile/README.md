@@ -4,7 +4,7 @@
 
 ## 🐧 Overview
 
-**NexisOS** is a free and open-source Linux distribution designed to offer complete transparency, control, and reproducibility. Built on **OS-Tree** and leveraging a custom **Rust-based system level declarative package manager**, NexisOS introduces a fully declarative configuration system inspired by **NixOS** and **Artix Linux**, but with a unique approach that blends both flexibility and simplicity.
+**NexisOS** is a free and open-source Linux distribution designed to offer complete transparency, control, and reproducibility. Leveraging a custom **Rust-based system level declarative package manager**, NexisOS introduces a fully declarative configuration system inspired by **NixOS** and **Artix Linux**, but with a unique approach that blends both flexibility and simplicity.
 
 At the core of NexisOS is a **strictly declarative package management** system that integrates seamlessly with the system configuration, utilizing **TOML** files for managing packages and system settings. This unified approach ensures that users can declare both their package dependencies and configuration changes declaratively, reducing the risk of configuration drift and ensuring reproducible system setups.
 
@@ -40,6 +40,20 @@ NexisOS is currently in the **design and planning phase**. Development will begi
 
 Stay tuned. Star or watch the repo to follow progress as it evolves.
 
+### 🔒 Filesystem Mutability and Access Policy Overview
+
+| Directory                         | Mutable?       | Notes                                         |
+|----------------------------------|----------------|-----------------------------------------------|
+| `/`                              | ❌             | Immutable root filesystem                      |
+| `/etc`                           | ❌             | All config declared in TOML                    |
+| `/usr`, `/lib*`, `/bin`, `/sbin` | ❌             | System binaries, read-only                      |
+| `/var/lib`                       | ❌ or partially | App data should be declared if needed         |
+| `/var/log`, `/run`, `/tmp`       | ✅             | Runtime and temp data — safe to be writable   |
+| `/home/<user>`                   | ✅ partial     | Personal files allowed; config disallowed      |
+| `/home/<user>/.config`           | ❌             | Declared in TOML only                          |
+| `/home/<user>/.local/share`      | ❌             | Declared in TOML only                          |
+| `/home/<user>/Downloads, Documents, etc.` | ✅     | User-controlled                               |
+
 </details>
 
 <details>
@@ -67,7 +81,6 @@ This is an independent, community-driven project, currently maintained by an ind
 - NixOS Foundation,
 - Artix Linux project,
 - Dinit maintainers,
-- OS-Tree developers,
 - or the authors of any additional tools or packages used in NexisOS (e.g., firewalld, ClamAV, Maldet, Falco, Suricata).
 
 All product names, trademarks, and registered trademarks are property of their respective owners. Their use in this project is for identification, compatibility, and reference only, and does not imply any official endorsement.
@@ -97,7 +110,6 @@ NexisOS is built upon the contributions of the open-source community. Special th
 
 - The NixOS community for pioneering declarative system configurations, atomic upgrades, and reproducible builds, which directly inspired NexisOS’s design.
 - The Artix Linux team for their systemd-free, minimalist approach to Linux, which influenced our choice of Dinit as the default init system.
-- OS-Tree for providing the powerful system image management framework at the core of NexisOS’s declarative package management.
 - Dinit for its simplicity, modern design, and clean dependency model, which enables flexible and efficient service management.
 - The Rust community for developing the language that powers NexisOS’s declarative package manager, chosen for its performance and safety.
 - The security-focused open-source projects (e.g., firewalld, ClamAV, Maldet, Falco, Suricata) for tools that enhance NexisOS’s built-in security.
