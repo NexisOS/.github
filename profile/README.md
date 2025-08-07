@@ -40,6 +40,15 @@ NexisOS is currently in the **design and planning phase**. Development will begi
 
 Stay tuned. Star or watch the repo to follow progress as it evolves.
 
+### 📂 Repositories
+
+Explore the NexisOS GitHub organization to find core components of the distribution, including:
+
+- Declarative configuration modules
+- ISO building scripts
+- Package overlay definitions
+- System documentation
+
 ### 🔒 Filesystem Mutability and Access Policy Overview
 
 | Directory                         | Mutable?       | Notes                                         |
@@ -58,21 +67,6 @@ Stay tuned. Star or watch the repo to follow progress as it evolves.
 
 <details>
 
-<summary>🔍 Design Inspiration</summary>
-
-NexisOS draws from the best parts of:
-
-- **[NixOS](https://nixos.org)** for declarative system configuration, atomic upgrades, and reproducible builds
-- **[Artix Linux](https://artixlinux.org)** for its minimalist, systemd-free architecture and alternative init systems
-
-Unlike Artix, NexisOS will use **[Dinit](https://github.com/dimitri/dinit)** as its default init system, chosen for its simplicity, modern design, and clean dependency model.
-
-Our goal is to merge these concepts into a focused operating system built on clarity, reproducibility, and user control.
-
-</details>
-
-<details>
-
 <summary>⚖️ Disclaimer</summary>
 
 This is an independent, community-driven project, currently maintained by an individual developer. It is **not officially affiliated with, endorsed by, or sponsored by**:
@@ -86,19 +80,6 @@ This is an independent, community-driven project, currently maintained by an ind
 All product names, trademarks, and registered trademarks are property of their respective owners. Their use in this project is for identification, compatibility, and reference only, and does not imply any official endorsement.
 
 NexisOS builds upon and is inspired by the work of many open source projects and contributors. Please see the [Acknowledgments](#acknowledgments) section for details.
-
-</details>
-
-<details>
-
-<summary>📂 Repositories</summary>
-
-Explore the NexisOS GitHub organization to find core components of the distribution, including:
-
-- Declarative configuration modules
-- ISO building scripts
-- Package overlay definitions
-- System documentation
 
 </details>
 
