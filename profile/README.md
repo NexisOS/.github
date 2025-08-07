@@ -50,6 +50,7 @@ Explore the NexisOS GitHub organization to find core components of the distribut
 - System documentation
 
 ### 🔒 Filesystem Mutability and Access Policy Overview
+NexisOS enforces filesystem immutability using either SELinux or chattr +i to restrict unauthorized changes. A base filesystem manifest defines the original state, and generations are compared during rebuilds to revert or clean up any divergence.
 
 | Directory                         | Mutable?       | Notes                                         |
 |----------------------------------|----------------|-----------------------------------------------|
