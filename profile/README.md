@@ -10,7 +10,7 @@ At the core of NexisOS is a **strictly declarative package management** system t
 
 Unlike traditional Linux distributions, NexisOS does not rely on central repositories, which helps minimize long-term maintenance costs. Instead, the user defines their own flake sources and configurations, bringing a "captain of your own ship" philosophy to system management.
 
-Security is a foundational priority for NexisOS. The distribution ships with several pre-configured security tools such as **firewalld**, **ClamAV**, **Maldet**, **Falco**, and **Suricata** for endpoint protection, malware detection, runtime security monitoring, and intrusion prevention, helping to create secure and resilient systems right out of the box.
+Security is a foundational priority for NexisOS. The distribution ships with several pre-configured security tools such as **firewalld**, **ClamAV**, **Maldet**, **Tetragon**, and **Suricata** for endpoint protection, malware detection, runtime security monitoring, and intrusion prevention, helping to create secure and resilient systems right out of the box.
 
 ---
 
@@ -76,7 +76,7 @@ This is an independent, community-driven project, currently maintained by an ind
 - NixOS Foundation,
 - Artix Linux project,
 - Dinit maintainers,
-- or the authors of any additional tools or packages used in NexisOS (e.g., firewalld, ClamAV, Maldet, Falco, Suricata).
+- or the authors of any additional tools or packages used in NexisOS (e.g., firewalld, ClamAV, Maldet, Tetragon, Suricata).
 
 All product names, trademarks, and registered trademarks are property of their respective owners. Their use in this project is for identification, compatibility, and reference only, and does not imply any official endorsement.
 
@@ -94,7 +94,7 @@ NexisOS is built upon the contributions of the open-source community. Special th
 - The Artix Linux team for their systemd-free, minimalist approach to Linux, which influenced our choice of Dinit as the default init system.
 - Dinit for its simplicity, modern design, and clean dependency model, which enables flexible and efficient service management.
 - The Rust community for developing the language that powers NexisOS’s declarative package manager, chosen for its performance and safety.
-- The security-focused open-source projects (e.g., firewalld, ClamAV, Maldet, Falco, Suricata) for tools that enhance NexisOS’s built-in security.
+- The security-focused open-source projects (e.g., firewalld, ClamAV, Maldet, Tetragon, Suricata) for tools that enhance NexisOS’s built-in security.
 - The broader Linux and open-source communities for their invaluable contributions to the tools and libraries that make projects like NexisOS possible.
 
 NexisOS would not be possible without the foundational work of the open-source ecosystem. The project is deeply grateful for the contributions that have made this work possible, and I, as the founder of NexisOS, personally appreciate the support and inspiration provided by all involved.
