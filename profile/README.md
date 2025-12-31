@@ -4,129 +4,139 @@
 
 ## 🐧 Overview
 
-**NexisOS** is a free and open-source Linux distribution designed to offer complete transparency, control, and reproducibility. Leveraging a custom **Rust-based system level declarative package manager**, NexisOS introduces a fully declarative configuration system inspired by **NixOS** and **Artix Linux**, but with a unique approach that blends both flexibility and simplicity.
+**NexisOS** is a free and open-source Linux distribution focused on transparency, control, and reproducibility through declarative configuration. Built with a custom **Rust-based package manager** using **TOML** configuration files, NexisOS offers a NixOS-inspired approach with key design differences for greater flexibility and sustainability.
 
-At the core of NexisOS is a **strictly declarative package management** system that integrates seamlessly with the system configuration, utilizing **TOML** files for managing packages and system settings. This unified approach ensures that users can declare both their package dependencies and configuration changes declaratively, reducing the risk of configuration drift and ensuring reproducible system setups.
+### Key Design Principles
 
-Unlike traditional Linux distributions, NexisOS does not rely on central repositories, which helps minimize long-term maintenance costs. Instead, the user defines their own flake sources and configurations, bringing a "captain of your own ship" philosophy to system management.
+- **Declarative Configuration**: System and package management through TOML files—no DSL required like nix syntax and reinventing the wheel for package configs
+- **Decentralized Package Model**: No central repositories beyond core packages—users define their own sources
+- **Flexible Mutability**: Support for mutable work directories and virtual filesystems e.g., Java security directories without workarounds like nix-ld
+- **Security-First**: Pre-configured with a sensible security stack—ClamAV, Maldet, Tetragon, and Suricata
 
-Security is a foundational priority for NexisOS. The distribution ships with several pre-configured security tools such as **firewalld**, **ClamAV**, **Maldet**, **Tetragon**, and **Suricata** for endpoint protection, malware detection, runtime security monitoring, and intrusion prevention, helping to create secure and resilient systems right out of the box.
+| Security Layer  | Implementation                                         |
+|:----------------|:-------------------------------------------------------|
+| Firmware / Boot | Secure Boot, TPM, dm-verity                            |
+| Kernel          | SELinux, seccomp, LKRG, IMA/EVM, lockdown              |
+| Runtime         | init sandboxing, Tetragon, ClamAV, R-FX Networks's LMD |
+| Isolation       | namespaces, cgroups v2                                 |
+| Network         | nftables, Suricata                                     |
+| Filesystem      | read-only root with controlled mutability              |
 
 ---
 
+## 🚧 Project Status
+
+NexisOS is in **active design phase**. Development will begin after core architecture is finalized.
+
+**Current Focus:**
+- Finalizing package manager design and TOML configuration system
+- Designing custom init system
+- Security tooling integration
+- Repository structure and build infrastructure
+
+> ⚠️ **Note**: Once released, v0.x.x versions will be experimental and intended for testing.
+
+---
+
+## 📂 Repository Structure
+
+The NexisOS project is split into two repositories:
+
+1. **nexisos-installer** - Whiptail-based installer ISO with WiFi support for system installation
+2. **nexisos-packages** - Core distribution packages bootstrapped/downloaded by the installer
+
+---
+
+## 🔧 Init System
+
+NexisOS uses a custom init system designed for modern Linux kernel features and declarative configuration integration. Key features include:
+
+- **pidfd support**: Race-condition-free process management using file descriptors instead of PIDs
+- **Declarative service definitions**: Services defined in TOML alongside system configuration
+- **Modern kernel integration**: Built to leverage cgroups v2, namespaces, and other contemporary Linux features
+- **Flexible dependency management**: Advanced service ordering and dependency resolution
+
+This init system is designed to integrate seamlessly with NexisOS's declarative philosophy while providing robust, secure service management.
+
+---
+
+## 🔒 Filesystem Access Policy
+
+NexisOS enforces immutability using SELinux or `chattr +i`. A base manifest tracks filesystem state, and generations are compared during rebuilds.
+
+| Directory                                     | Mutable | Notes                         |
+|:----------------------------------------------|:--------|:------------------------------|
+| `/`, `/etc`, `/usr`, `/lib*`, `/bin`, `/sbin` | ❌      | Immutable system files        |
+| `/var/lib`                                    | Partial | Application data in TOML      |
+| `/var/log`, `/run`, `/tmp`                    | ✅      | Runtime and temporary data    |
+| `/home/<user>/.config`, `.local/share`        | ❌      | Declared in TOML only         |
+| `/home/<user>/Documents`, `Downloads`, etc.   | ✅      | User-controlled directories   |
+
+---
+
+## 🛠️ Package Manager Architecture
+
 <details>
-<summary>🔽 Download ISO</summary>
+<summary>View Package Installation Flow Diagram</summary>
 
-You can access the NexisOS project page on SourceForge. Please note that while the link is live, the ISO has not yet been built. It will be added once the first build is ready:
-
-👉 [Download NexisOS ISO](https://sourceforge.net/projects/nexisos/files/latest/download)
-
-> ⚠️ *Note: The ISO versions in the range of v0.x.x are currently experimental and intended for testing and feedback. Expect rapid iteration and updates.*
+<div align="center" style="background-color: white; padding: 20px;">
+  <img src="https://github.com/NexisOS/.github/blob/main/diagram1.svg" width="100%" alt="Package Install Flow">
+</div>
 
 </details>
 
-<details>
+The package manager is being designed with the following considerations:
 
-<summary>🚧 Project Status</summary>
+- **Configuration**: TOML files (no DSL); native config file formats supported
+- **Performance Optimizations**: Blake3 hashing, improved deduplication on write, cached IR with mmap, persistent DAG for dependencies
+- **Data Structures**: SwissTable-style hash tables, succinct tries, bloom filters, ROAR bitmaps for feature flags
+- **Chunking**: Hybrid fixed + rolling for changed files, Zstandard compression, LZ4 for metadata
+- **Builds**: Hermetic sandboxed parallel builds, Chase-Lev work stealing queues, lock-free dependency traversal
+- **Distribution**: HTTP/3 transfers, BitTorrent/IPFS-style replication
 
-NexisOS is currently in the **design and planning phase**. Development will begin after core architectural decisions are finalized and trademark and legal preparations are complete.
+---
 
-### In progress:
-- Defining the distribution’s scope, goals, and values
-- Applying appropriate licensing to repositories
-- Designing the TOML-based configuration system
-- Developing security tooling and package infrastructure
-- Planning for long-term sustainability and funding
+## 📥 Download
 
-Stay tuned. Star or watch the repo to follow progress as it evolves.
+ISO builds will be available on SourceForge once the first release is ready:
 
-### 📂 Repositories
+👉 [NexisOS on SourceForge](https://sourceforge.net/projects/nexisos/files/latest/download)
 
-Explore the NexisOS GitHub organization to find core components of the distribution, including:
+---
 
-- Declarative configuration modules
-- ISO building scripts
-- Package overlay definitions
-- System documentation
+## ⚖️ Disclaimer
 
-### 🔒 Filesystem Mutability and Access Policy Overview
-NexisOS enforces filesystem immutability using either SELinux or chattr +i to restrict unauthorized changes. A base filesystem manifest defines the original state, and generations are compared during rebuilds to revert or clean up any divergence.
+This is an independent, community-driven project maintained by an individual developer currently. It is **not officially affiliated with** the Linux Foundation, NixOS Foundation, Artix Linux, or any other tools mentioned.
 
-| Directory                         | Mutable?       | Notes                                         |
-|----------------------------------|----------------|-----------------------------------------------|
-| `/`                              | ❌             | Immutable root filesystem                      |
-| `/etc`                           | ❌             | All config declared in TOML                    |
-| `/usr`, `/lib*`, `/bin`, `/sbin` | ❌             | System binaries, read-only                      |
-| `/var/lib`                       | ❌ or partially | App data should be declared if needed         |
-| `/var/log`, `/run`, `/tmp`       | ✅             | Runtime and temp data — safe to be writable   |
-| `/home/<user>`                   | ✅ partial     | Personal files allowed; config disallowed      |
-| `/home/<user>/.config`           | ❌             | Declared in TOML only                          |
-| `/home/<user>/.local/share`      | ❌             | Declared in TOML only                          |
-| `/home/<user>/Downloads, Documents, etc.` | ✅     | User-controlled                               |
+All trademarks are property of their respective owners and used for identification purposes only.
 
-</details>
+---
 
-<details>
+## 🙏 Acknowledgments
 
-<summary>⚖️ Disclaimer</summary>
+NexisOS builds upon the work of many open-source projects:
 
-This is an independent, community-driven project, currently maintained by an individual developer. It is **not officially affiliated with, endorsed by, or sponsored by**:
+- **NixOS** for declarative system configuration and reproducible builds
+- **Artix Linux** and **Dinit** for a more secure and efficient drop-in replacement for Systemd
+- **Rust community** for the language powering the package manager
+- **Security projects** firewalld, SELinux, ClamAV, R-FX Networks's LMD, Tetragon, Suricata for built-in security tools
+- The broader **Linux and open-source communities** for foundational tools and libraries
 
-- The Linux Foundation,
-- NixOS Foundation,
-- Artix Linux project,
-- Dinit maintainers,
-- or the authors of any additional tools or packages used in NexisOS (e.g., firewalld, ClamAV, Maldet, Tetragon, Suricata).
+---
 
-All product names, trademarks, and registered trademarks are property of their respective owners. Their use in this project is for identification, compatibility, and reference only, and does not imply any official endorsement.
+## 📢 Community & Support
 
-NexisOS builds upon and is inspired by the work of many open source projects and contributors. Please see the [Acknowledgments](#acknowledgments) section for details.
+As a personal project by a single maintainer, community channels are coming soon.
 
-</details>
+**For now:**
+- Use [GitHub Issues](https://github.com/NexisOS/issues) for bugs, features, and ideas
+- GitHub Discussions will be enabled soon for design conversations
+- Official community forum/chat still being decided
 
-<details>
+---
 
-<summary>🙏 Acknowledgments</summary>
+## 📬 Contact
 
-NexisOS is built upon the contributions of the open-source community. Special thanks to:
+**Email**: [kyle.gortych.dev@gmail.com](mailto:kyle.gortych.dev@gmail.com)
 
-- The NixOS community for pioneering declarative system configurations, atomic upgrades, and reproducible builds, which directly inspired NexisOS’s design.
-- The Artix Linux team for their systemd-free, minimalist approach to Linux, which influenced our choice of Dinit as the default init system.
-- Dinit for its simplicity, modern design, and clean dependency model, which enables flexible and efficient service management.
-- The Rust community for developing the language that powers NexisOS’s declarative package manager, chosen for its performance and safety.
-- The security-focused open-source projects (e.g., firewalld, ClamAV, Maldet, Tetragon, Suricata) for tools that enhance NexisOS’s built-in security.
-- The broader Linux and open-source communities for their invaluable contributions to the tools and libraries that make projects like NexisOS possible.
-
-NexisOS would not be possible without the foundational work of the open-source ecosystem. The project is deeply grateful for the contributions that have made this work possible, and I, as the founder of NexisOS, personally appreciate the support and inspiration provided by all involved.
-
-As development progresses, we look forward to collaborating with future maintainers and contributors to build on this foundation and create a robust and sustainable operating system for all.
-
-</details>
-
-<details>
-
-<summary>📢 Community & Support</summary>
-
-NexisOS is a personal project led and developed by a single maintainer. Community channels, including forums and chat, are coming soon.
-
-In the meantime:
-
-- Please use [GitHub Issues](https://github.com/NexisOS/issues) to report bugs, request features, or share ideas.
-- Discussions will be enabled shortly to facilitate design conversations and collaboration.
-- Stay tuned for announcements about the official community chat (likely on Matrix, Discord, or IRC).
-
-Your feedback and participation are highly appreciated and essential to shaping NexisOS’s future. Thank you for your patience and support during this early phase!
-
-</details>
-
-<details>
-
-<summary>📬 Contact the Creator</summary>
-
-If you'd like to share ideas, provide feedback, or get in touch directly, feel free to email me at:
-
-**[kyle.gortych.dev@gmail.com](mailto:kyle.gortych.dev@gmail.com)**
-
-Please note that as the sole maintainer, response times may vary. For general issues and feature requests, we encourage using GitHub Issues or Discussions once available.
-
-</details>
+Please use GitHub Issues for general inquiries. As the sole maintainer, response times may vary.
