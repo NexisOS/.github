@@ -10,5 +10,5 @@ These files apply by default to all repositories unless overridden locally.
 - [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md)
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [SECURITY.md](SECURITY.md)
-- [PULL_REQUEST_TEMPLATE.md](PULL_REQUEST_TEMPLATE)
+- [PULL_REQUEST_TEMPLATE.md](PULL_REQUEST_TEMPLATE.md)
 - [GOVERNANCE.md](GOVERNANCE.md)
