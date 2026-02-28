@@ -2,19 +2,59 @@
   <img src="https://github.com/NexisOS/.github/blob/main/NexisOS2.png" width="50%" alt="NexisOS Logo">
 </div>
 
-## 🐧 Overview
+# 🐧 Overview
 
-**NexisOS** is a free and open-source Linux distribution focused on transparency, control, and reproducibility through declarative configuration. Built with a custom **Rust-based package manager** using **TOML** configuration files, NexisOS offers a NixOS-inspired approach with key design differences for greater flexibility and sustainability.
+NexisOS is a free and open-source Linux distribution focused on transparency, control, reproducibility, and high performance through declarative configuration. Built with a custom Rust-based package manager using TOML configuration files, NexisOS offers a NixOS-inspired approach with key design improvements for greater flexibility, performance, and integration with Linux standards.
+
+## Common NixOS pain points
+While NixOS introduced groundbreaking ideas for reproducibility and declarative system management, it has several limitations:
+
+Full derivation hashing: Nix couples builds to environment, compiler paths, and derivation metadata. Small unrelated changes can trigger large rebuilds. Binary reuse is difficult across machines or over time.
+
+Slow store optimization: Deduplication and rebuild optimizations require global scans (nix-store --optimize) that are I/O and CPU heavy.
+
+SELinux incompatibility: The immutable /nix/store path model makes SELinux labeling complex and inconsistent.
+
+Nebulous conventions: Nix DSL, module composition, and derivation standards often conflict with traditional Linux filesystem hierarchy and conventions.
+
+Limited flexibility: Mutable directories, virtual filesystems, and work directories require workarounds like nix-ld.
+
+Debuging failed rebuilds: Doesn't directly show what package caused a transitive dependency to fail.
+
+NexisOS was designed to overcome these issues with a system that:
+
+Works with Linux, not against it.
+
+Supports high-performance incremental rebuilds.
+
+Supports SELinux natively.
+
+Allows safe binary reuse.
+
+Follows clear Linux conventions and deterministic identity models.
+
+Minimizes unnecessary rebuilds and rebuild propagation.
 
 ### Key Design Principles
 
-- **Declarative Configuration**: System and package management through TOML files—no DSL required like nix syntax and reinventing the wheel for package configs
-- **Decentralized Package Model**: No central repositories beyond core packages—users define their own sources
-- **Flexible Mutability**: Support for mutable work directories and virtual filesystems e.g., Java security directories without workarounds like nix-ld
-- **Security-First**: Pre-configured with a sensible security stack—ClamAV, Maldet, Tetragon, and Suricata
+note to add RocksDB due to parallel writes for multi-host rebuilds
+
+Declarative Configuration: System and package management through TOML files—no DSL required.
+
+Graph-Aware Package Identity: Package IDs based on hash(file content) + hash(dependency graph) rather than full derivation, allowing binary reuse and faster rebuilds.
+
+Minimal Rollbacks: Generation symlink switching rather than full snapshots, enabling instant rollback.
+
+Immutable Store / Projected FHS: CAS store with immutable binaries, and projected root filesystem (/system) for execution with proper SELinux labels.
+
+High Performance: Insert-time deduplication, BLAKE3 hashing, memory-mapped database indexes, parallel builds, minimal I/O overhead.
+
+Security-First: Pre-configured security stack (ClamAV, Maldet, Tetragon, Suricata, SELinux).
+
+### Security Stack
 
 | Security Layer  | Implementation                                         |
-|:----------------|:-------------------------------------------------------|
+| :-------------- | :----------------------------------------------------- |
 | Firmware / Boot | Secure Boot, TPM, dm-verity                            |
 | Kernel          | SELinux, seccomp, LKRG, IMA/EVM, lockdown              |
 | Runtime         | init sandboxing, Tetragon, ClamAV, R-FX Networks's LMD |
@@ -42,7 +82,7 @@ NexisOS is in **active design phase**. Development will begin after core archite
 
 The NexisOS project is split into two repositories:
 
-1. **nexisos-installer** - Whiptail-based installer ISO with WiFi support for system installation
+1. **nexisos-installer** - Minimal TUI based installer ISO with WiFi support for system installation
 2. **nexisos-packages** - Core distribution packages bootstrapped/downloaded by the installer
 
 ---
@@ -56,21 +96,24 @@ NexisOS uses a custom init system designed for modern Linux kernel features and 
 - **Modern kernel integration**: Built to leverage cgroups v2, namespaces, and other contemporary Linux features
 - **Flexible dependency management**: Advanced service ordering and dependency resolution
 
-This init system is designed to integrate seamlessly with NexisOS's declarative philosophy while providing robust, secure service management.
+This init system is designed to integrate seamlessly with NexisOS's declarative philosophy while providing robust, secure service management and systemd compatibility.
 
 ---
 
 ## 🔒 Filesystem Access Policy
 
-NexisOS enforces immutability using SELinux or `chattr +i`. A base manifest tracks filesystem state, and generations are compared during rebuilds.
+NexisOS enforces immutability in /store (immutable CAS) and controlled projections for active generations.
 
-| Directory                                     | Mutable | Notes                         |
-|:----------------------------------------------|:--------|:------------------------------|
-| `/`, `/etc`, `/usr`, `/lib*`, `/bin`, `/sbin` | ❌      | Immutable system files        |
-| `/var/lib`                                    | Partial | Application data in TOML      |
-| `/var/log`, `/run`, `/tmp`                    | ✅      | Runtime and temporary data    |
-| `/home/<user>/.config`, `.local/share`        | ❌      | Declared in TOML only         |
-| `/home/<user>/Documents`, `Downloads`, etc.   | ✅      | User-controlled directories   |
+
+| Directory                                   | Mutable | Notes                                        |
+| :------------------------------------------ | :------ | :------------------------------------------- |
+| `/store`                                    | ❌      | Immutable content-addressed store            |
+| `/generations/<id>/rootfs`                  | ❌      | Projected FHS for execution, SELinux labeled |
+| `/system`                                   | ❌      | Symlink to active generation                 |
+| `/var/lib`                                  | Partial | Application data in TOML                     |
+| `/var/log`, `/run`, `/tmp`                  | ✅      | Runtime and temporary data                   |
+| `/home/<user>/.config`, `.local/share`      | ❌      | Declared in TOML only                        |
+| `/home/<user>/Documents`, `Downloads`, etc. | ✅      | User-controlled directories                  |
 
 ---
 
@@ -85,14 +128,66 @@ NexisOS enforces immutability using SELinux or `chattr +i`. A base manifest trac
 
 </details>
 
-The package manager is being designed with the following considerations:
+### Key Features
 
-- **Configuration**: TOML files (no DSL); native config file formats supported
-- **Performance Optimizations**: Blake3 hashing, improved deduplication on write, cached IR with mmap, persistent DAG for dependencies
-- **Data Structures**: SwissTable-style hash tables, succinct tries, bloom filters, ROAR bitmaps for feature flags
-- **Chunking**: Hybrid fixed + rolling for changed files, Zstandard compression, LZ4 for metadata
-- **Builds**: Hermetic sandboxed parallel builds, Chase-Lev work stealing queues, lock-free dependency traversal
-- **Distribution**: HTTP/3 transfers, BitTorrent/IPFS-style replication
+Graph-Aware Identity: PackageID = blake3(file content) + blake3(dependency graph).
+
+Enables binary reuse across machines and rebuilds.
+
+Avoids unnecessary rebuild cascades.
+
+Faster than Nix full derivation hashing.
+
+Content-Addressed Store (CAS):
+
+/store/
+    /objects/aa/bb/<ContentID>
+    /packages/aa/<PackageID>/manifest.toml
+
+Two-level bucket structure for scale
+
+Immutable objects, deduplicated on insert
+
+Generation Projection:
+
+/generations/<id>/rootfs
+/system -> /generations/<id>/rootfs
+
+Symlink switch enables minimal rollbacks (O(1))
+
+Projected FHS layout with proper SELinux labels
+
+Insert-Time Deduplication:
+
+No global store scans
+
+Deduplication occurs at file insertion
+
+O(new files only)
+
+Metadata Database:
+
+LMDB / RocksDB / SQLite for ContentID → object path, PackageID → content list
+
+Supports GC and fast rebuild checks
+
+Performance Optimizations:
+
+BLAKE3 hashing (parallelized)
+
+Memory-mapped caches for dependency DAG
+
+Parallel builds with lock-free queues
+
+Hybrid chunking & compression for changed files (Zstd/LZ4)
+
+Optional bloom filters / roaring bitmaps for very large stores
+
+Distribution & Updates:
+
+HTTP/3 transfers
+
+BitTorrent/IPFS-style replication for binary packages
 
 ---
 

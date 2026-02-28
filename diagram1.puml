@@ -3,82 +3,106 @@
 ' skinparam dpi 300
 skinparam svgDimensionStyle false
 skinparam backgroundColor white
-title NexisOS Package Install – High-Level Flow
+title NexisOS Package Install – Updated High-Level Flow
 
 actor User
 participant "CLI / API\n(Frontend)" as CLI
 participant "TOML Parser\n(Config Loader)" as Parser
-participant "Derivation Resolver\n(DAG Builder)" as Resolver
-participant "Execution Engine\n(Build Scheduler)" as Exec
-participant "Content Store\n(CAS + Merkle DAG)" as Store
+participant "Dependency Resolver\n(Graph + DAG Builder)" as Resolver
+participant "Hash Engine\n(BLAKE3)" as Hasher
+participant "Content Store\n(Immutable CAS)" as Store
 participant "Mutable Env Manager\n(Overlays/VFS)" as Mutable
-participant "Activation Manager\n(Generation Switch)" as Activate
+participant "Generation Builder\n(Projected FHS)" as Builder
+participant "Activation Manager\n(/system Symlink)" as Activate
 
 == User Request ==
 User -> CLI : install packageA
 CLI -> Parser : load TOML config
 
-== Derivation Resolution ==
+== Dependency Resolution ==
 Parser -> Resolver : parsed config + dependencies
-Resolver -> Resolver : build persistent DAG
-Resolver -> Resolver : compute derivation hashes (BLAKE3)
+Resolver -> Resolver : normalize DAG
+Resolver -> Hasher : compute GraphID
 
-== Hash Lookup & Deduplication ==
-Resolver -> Store : query derivation hash
-Store -> Store : bloom filter pre-check
-alt Cache Hit
-    Store --> Resolver : derivation exists
-    Resolver -> Activate : use existing path
-else Cache Miss
-    Resolver -> Exec : schedule build/download
+== Package Processing ==
+loop For each package
+    Resolver -> Hasher : hash file contents → ContentID
+    Hasher --> Store : lookup ContentID
+    alt Exists in Store
+        Store --> Resolver : reuse existing object (dedup)
+    else
+        Hasher -> Store : insert object (chunked CAS, hybrid fixed+rolling)
+        Store --> Resolver : object stored
+    end
+    Resolver -> Hasher : compute PackageID (ContentIDs + GraphID)
+    Hasher --> Store : lookup PackageID
+    alt Exists
+        Store --> Builder : reuse package
+    else
+        Store --> Builder : record new package
+    end
 end
 
 == Parallel Execution ==
 par Binary Download (if available)
-    Exec -> Store : fetch via HTTP/3 or BitTorrent
-    Store -> Store : verify BLAKE3 hash + chunks
-    Store --> Exec : download complete
+    Builder -> Store : fetch via HTTP/3 or BitTorrent/IPFS
+    Store -> Store : verify BLAKE3 hash & chunk integrity
+    Store --> Builder : download complete
 end
 
 par Source Build (if needed)
-    Exec -> Exec : hermetic sandboxed build\n(namespaces + cgroups)
-    Exec -> Store : write chunks with dedup-on-write
-    Store -> Store : chunk-level addressing\n(hybrid fixed + rolling)
-    Store --> Exec : build complete
+    Builder -> Builder : hermetic sandboxed build\n(namespaces + cgroups)
+    Builder -> Store : write chunks with dedup-on-insert
+    Store --> Builder : build complete
 end
 
 == Mutable Environment Setup ==
-Exec -> Mutable : configure mutable work dirs\n(e.g., Java security dirs)
-Mutable -> Mutable : setup overlays or VFS
-Mutable -> Store : link immutable + mutable refs
+Builder -> Mutable : configure mutable work dirs\n(e.g., Java security dirs)
+Mutable -> Mutable : setup overlays/VFS
+Mutable -> Builder : link immutable + mutable paths
+
+== Generation Construction ==
+Builder -> Builder : build projected FHS rootfs
+Builder -> Store : compute GenerationID (sorted PackageIDs)
+Builder --> Store : record Generation
 
 == Activation ==
-Store -> Activate : finalized paths + generation
-Activate -> Activate : update symlinks\n(atomic switch)
+Builder -> Activate : point /system to new generation
 Activate -> CLI : activation success
 CLI -> User : packageA installed ✓
 
-note over Exec
-**Execution Engine:**
-• Chase-Lev work stealing
-• Lock-free dependency traversal
-• Hermetic parallel builds
-• Deduplication on write
+note over Hasher
+**Hasher / Identity:**
+• ContentID = blake3(file)
+• GraphID = blake3(normalized DAG)
+• PackageID = hash(ContentIDs + GraphID)
+• GenerationID = hash(sorted PackageIDs)
+• Enables binary reuse & minimal rebuild
 end note
 
 note over Store
 **Content Store:**
-• Chunked CAS (BLAKE3)
-• Merkle DAG structure
+• Immutable CAS
+• Chunked hybrid (fixed + rolling)
 • Bloom filter pre-checks
-• ROAR bitmap for refs
-• Zstd/LZ4 compression
+• ROAR bitmap for references
+• Zstd/LZ4 compression optional
+• Insert-time deduplication (no global scan)
 end note
 
 note over Mutable
 **Mutable Manager:**
 • Overlays for work dirs
-• VFS for specific paths
-• No nix-ld needed
+• VFS for paths like Java security dirs
+• Ensures mutable state without nix-ld
 end note
+
+note over Builder
+**Generation Builder:**
+• Projected FHS rootfs
+• SELinux labels applied
+• Only rebuild changed packages
+• Minimal rollback via symlink
+end note
+
 @enduml
