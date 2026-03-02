@@ -200,4 +200,14 @@ As a personal project by a single maintainer, community channels are coming soon
 
 ## ⚖️ Disclaimer
 
-This is an independent, community-driven project maintained by an individual developer. It is **not officially affiliated with** the Linux Foundation, NixOS Foundation, Artix Linux, or any other tools mentioned. All trademarks are property of their respective owners and used for identification purposes only.
+This is an independent, community-driven project maintained by an individual developer. It is not officially affiliated with the Linux Foundation, NixOS Foundation, Artix Linux, or any other tools mentioned. All trademarks are property of their respective owners and used for identification purposes only.
+
+This Distribution is released under the GNU General Public License version 3.0 and is currently under active development. Features may be incomplete, experimental, or subject to change.
+
+Certain jurisdictions, including the State of California, have enacted or may enact laws requiring operating systems or platforms to implement age verification or minor-protection mechanisms. This Distribution does not currently implement operating system–level age verification.
+
+Because this Distribution may be installed across diverse environments including x86_64 desktops and laptops, ARM single-board computers, virtual machines, cloud systems, embedded devices, and custom hardware. There is currently no widely adopted, architecture-independent standard for implementing mandatory age verification across all supported systems.
+
+Users and redistributors are solely responsible for ensuring compliance with applicable local, state, national, and international laws. If a clear, broadly accepted, and technically viable cross-architecture standard for operating system-level age verification emerges, it will be evaluated and incorporated as appropriate.
+
+The maintainer prioritizes user security and privacy; however, lawful deployment remains the responsibility of the end user or distributor.
