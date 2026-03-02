@@ -199,15 +199,14 @@ As a personal project by a single maintainer, community channels are coming soon
 ---
 
 ## ⚖️ Disclaimer
+This is an independent, community-driven project maintained currently by an individual developer. It is not affiliated with the Linux Foundation, NixOS Foundation, Artix Linux, or any other referenced projects. All trademarks belong to their respective owners and are used for identification only.
 
-This is an independent, community-driven project maintained by an individual developer. It is not officially affiliated with the Linux Foundation, NixOS Foundation, Artix Linux, or any other tools mentioned. All trademarks are property of their respective owners and used for identification purposes only.
+This Distribution is released under the GNU General Public License version 3.0 and is under active development. Features may be incomplete or experimental.
 
-This Distribution is released under the GNU General Public License version 3.0 and is currently under active development. Features may be incomplete, experimental, or subject to change.
+As provided under the GNU General Public License version 3.0, the software is supplied “as is,” without any warranty, express or implied, including merchantability or fitness for a particular purpose. All risk regarding quality, performance, compliance, and deployment remains with the user.
 
-Certain jurisdictions, including the State of California, have enacted or may enact laws requiring operating systems or platforms to implement age verification or minor-protection mechanisms. This Distribution does not currently implement operating system–level age verification.
+This project publishes software code only. The maintainer does not operate an online service or platform and does not collect, process, or monitor end-user data through the Distribution.
 
-Because this Distribution may be installed across diverse environments including x86_64 desktops and laptops, ARM single-board computers, virtual machines, cloud systems, embedded devices, and custom hardware. There is currently no widely adopted, architecture-independent standard for implementing mandatory age verification across all supported systems.
+Certain jurisdictions — including the State of California and other U.S. states or foreign countries — may impose age verification, identity controls, monitoring, or similar regulatory requirements at the operating system level. This Distribution does not currently implement such mechanisms, and no widely adopted cross-architecture standard exists for doing so across the diverse platforms it supports (including x86_64, ARM, virtual, cloud, embedded, and custom systems). If a clear and technically viable standard emerges, it may be evaluated for incorporation.
 
-Users and redistributors are solely responsible for ensuring compliance with applicable local, state, national, and international laws. If a clear, broadly accepted, and technically viable cross-architecture standard for operating system-level age verification emerges, it will be evaluated and incorporated as appropriate.
-
-The maintainer prioritizes user security and privacy; however, lawful deployment remains the responsibility of the end user or distributor.
+Users, integrators, and redistributors are solely responsible for ensuring compliance with all applicable laws. If you reside in or operate within a jurisdiction requiring such controls, seek qualified legal counsel before installing or distributing this software. If compliance cannot be ensured, do not install, distribute, or deploy the Distribution.
