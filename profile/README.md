@@ -6,7 +6,11 @@
 
 NexisOS is a free and open-source Linux distribution focused on **transparency, control, reproducibility, and high performance** through declarative configuration. Built with a custom Rust-based package manager using TOML configuration files, NexisOS offers a NixOS-inspired approach with key design improvements for greater flexibility, performance, and integration with Linux standards.
 
-> ⚠️ **Project Status**: NexisOS is in **active design phase**. Development begins after core architecture is finalized. Once released, v0.x.x versions will be experimental and intended for testing.
+---
+
+## ⚠️ Project Status
+
+NexisOS is in **early development and not yet in pre-alpha release**. Core architecture is still being designed, and no official binaries or installer ISOs are currently available. All features are experimental, and the software is intended for testing, evaluation, and development purposes only. Users should not expect a production-ready system at this stage.
 
 ---
 
@@ -199,14 +203,25 @@ As a personal project by a single maintainer, community channels are coming soon
 ---
 
 ## ⚖️ Disclaimer
-This is an independent, community-driven project maintained currently by an individual developer. It is not affiliated with the Linux Foundation, NixOS Foundation, Artix Linux, or any other referenced projects. All trademarks belong to their respective owners and are used for identification only.
 
-This Distribution is released under the GNU General Public License version 3.0 and is under active development. Features may be incomplete or experimental.
+NexisOS is an independent, community-driven project currently maintained by an individual developer. It is not affiliated with the Linux Foundation, NixOS Foundation, Artix Linux, or any other referenced projects. All trademarks belong to their respective owners and are used solely for identification.
 
-As provided under the GNU General Public License version 3.0, the software is supplied “as is,” without any warranty, express or implied, including merchantability or fitness for a particular purpose. All risk regarding quality, performance, compliance, and deployment remains with the user.
+The software is released under the GNU General Public License v3.0 and is provided **“as is,” without warranty of any kind**, including any implied warranties of merchantability or fitness for a particular purpose, as described in the GPL license.
 
-This project publishes software code only. The maintainer does not operate an online service or platform and does not collect, process, or monitor end-user data through the Distribution.
+This project distributes **software code only**. The maintainer does not operate an online service, platform, or user account system and does not collect, process, or monitor end-user data through the distribution.
 
-Certain jurisdictions — including the State of California and other U.S. states or foreign countries — may impose age verification, identity controls, monitoring, or similar regulatory requirements at the operating system level. This Distribution does not currently implement such mechanisms, and no widely adopted cross-architecture standard exists for doing so across the diverse platforms it supports (including x86_64, ARM, virtual, cloud, embedded, and custom systems). If a clear and technically viable standard emerges, it may be evaluated for incorporation.
+Certain jurisdictions—including some U.S. states and foreign countries—may impose age-verification, identity, or monitoring requirements related to operating systems or online platforms. NexisOS does not currently implement such mechanisms, and no widely adopted cross-architecture standard exists for doing so across the diverse systems it supports.
 
-Users, integrators, and redistributors are solely responsible for ensuring compliance with all applicable laws. If you reside in or operate within a jurisdiction requiring such controls, seek qualified legal counsel before installing or distributing this software. If compliance cannot be ensured, do not install, distribute, or deploy the Distribution.
+Users, integrators, and redistributors are solely responsible for ensuring compliance with all applicable laws in their jurisdiction before installing, distributing, or deploying this software.
+
+## Policy and Standards
+
+NexisOS will be publishing an open letter requesting technical clarification and
+standards coordination regarding operating-system-level age assurance
+requirements affecting decentralized open-source systems.
+
+<!-- NexisOS has published an open letter requesting technical clarification and
+standards coordination regarding operating-system-level age assurance
+requirements affecting decentralized open-source systems. -->
+
+<!-- See: [age-assurance-standards-request.md](docs/policy/age-assurance-standards-request.md) -->
