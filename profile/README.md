@@ -1124,11 +1124,56 @@ nexis fleet sync-profiles        # push /etc/nexis/profiles/ to all hosts from c
 
 ## 📂 Repository Structure
 
-| Repository | Purpose |
-| :--------- | :------ |
-| **nexisos-init** | `nexis-init` (PID 1) and `nexisctl` — Rust-based init system with pidfd supervision and systemd compatibility |
-| **nexisos-installer** | Minimal TUI-based installer ISO with WiFi support |
-| **nexisos-packages** | Core distribution packages bootstrapped/downloaded by the installer |
+| Repository                | Purpose                                             |
+| :------------------------ | :-------------------------------------------------- |
+| **nexisos-bootstrap**     | Core distribution components and package management |
+| **nexisos-installer-iso** | Buildroot-based live ISO and TUI installer          |
+
+<details>
+<summary>Click to see sub-structure</summary>
+
+## 📦 nexisos-bootstrap
+
+```text
+nexisos-bootstrap/
+├── nexis_common/   # Shared utilities and core logic
+├── nexis_init/     # System initialization components
+├── nexis_pm/       # Package manager (core logic, tests, benches)
+├── nexis_scan/     # System and package scanning utilities
+├── Cargo.toml      # Rust workspace definition
+└── diagram1.puml   # Architecture diagram
+```
+
+## 💿 nexisos-installer-iso
+
+```text
+nexisos-installer-iso/
+├── buildroot/        # Buildroot (git submodule, ISO base system)
+├── distroConfigs/    # NexisOS-specific configs and overlays
+│   ├── overlay/      # Root filesystem overlay
+│   ├── scripts/      # Build and install helper scripts
+│   └── buildroot-packages/
+├── installer/        # Rust-based TUI installer
+├── createdISOs/      # Generated ISO output
+├── Makefile          # Build entrypoint
+└── shell.nix         # Development environment
+```
+
+## 🔧 Setup
+
+This repository uses git submodules.
+
+```bash
+git clone --recurse-submodules https://github.com/NexisOS/nexisos-installer-iso
+```
+
+**Or if already cloned:**
+
+```bash
+git submodule update --init --recursive
+```
+
+</details>
 
 ---
 
