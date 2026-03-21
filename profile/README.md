@@ -16,7 +16,7 @@ NexisOS is in **early development and not yet in pre-alpha release**. Core archi
 
 ## 💡 Motivation: Why Not NixOS?
 
-NixOS demonstrated that declarative, reproducible system management is viable at scale. NexisOS builds on that insight while rearchitecting the layers where NixOS introduces friction — particularly around rebuild performance, filesystem compatibility, and mandatory access control.
+NixOS demonstrated that declarative, reproducible system management is viable at scale. NexisOS builds on that insight while rearchitecting the layers where NixOS introduces friction particularly around rebuild performance, filesystem compatibility, and mandatory access control.
 
 <details>
 <summary>Specific NixOS pain points NexisOS addresses</summary>
@@ -37,19 +37,22 @@ NixOS demonstrated that declarative, reproducible system management is viable at
 
 ## 🏗️ Key Design Principles
 
-- **Declarative Configuration** — System and package management through TOML files with schema validation; no DSL required.
-- **Graph-Aware Package Identity** — Two-level hashing (`BuildHash` for the package itself, `InterfaceHash` for dependent rebuild decisions) enables binary reuse and minimizes rebuild cascades to only what changed at the ABI boundary.
-- **Atomic Rollbacks** — Generation symlink switching (O(1)) rather than full filesystem snapshots.
-- **Immutable Store / erofs Projection** — Content-addressed store on ext4 with immutable objects; generations compiled into compressed erofs images mounted as the root filesystem (`/system`), carrying proper SELinux labels.
-- **Native SELinux Integration** — SELinux is a first-class citizen, not a bolt-on; file contexts are baked into erofs images at generation build time.
-- **Security-First** — Pre-configured security stack from firmware through network layer.
-- **pidfd-Based Init** — Custom PID 1 (`nexis-init`) built on a single-threaded `mio`/`epoll` event loop with `pidfd` process supervision, `sd_notify` and socket activation protocol support, and a `org.freedesktop.systemd1` D-Bus compatibility layer via `zbus` — maximizing application compatibility with minimal code.
+- **Declarative Configuration:** System and package management through TOML files with schema validation; no DSL required.
+- **Graph-Aware Package Identity:** Two-level hashing (`BuildHash` for the package itself, `InterfaceHash` for dependent rebuild decisions) enables binary reuse and minimizes rebuild cascades to only what changed at the ABI boundary.
+- **Atomic Rollbacks:** Generation symlink switching (O(1)) rather than full filesystem snapshots.
+- **Immutable Store / erofs Projection:** Content-addressed store on ext4 with immutable objects; generations compiled into compressed erofs images mounted as the root filesystem (`/system`), carrying proper SELinux labels.
+- **Native SELinux Integration:** SELinux is a first-class citizen, not a bolt-on; file contexts are baked into erofs images at generation build time.
+- **Security-First:** Pre-configured security stack from firmware through network layer.
+- **pidfd-Based Init:** Custom PID 1 (`nexis-init`) built on a single-threaded `mio`/`epoll` event loop with `pidfd` process supervision, `sd_notify` and socket activation protocol support, and a `org.freedesktop.systemd1` D-Bus compatibility layer via `zbus` — maximizing application compatibility with minimal code.
 
 ---
 
 ## ⚡ Performance Architecture
 
-NexisOS targets measurably faster package operations than NixOS by reducing unnecessary work at each stage of the build and install pipeline. The following table outlines the design-level differences; benchmarks will be published once the implementation stabilizes.
+NexisOS targets measurably faster package operations than NixOS by reducing unnecessary work at each stage of the build and install pipeline.
+
+<details>
+<summary>View performance comparison table</summary>
 
 | Operation | NixOS | NexisOS (Design Target) |
 | :-------- | :---- | :---------------------- |
@@ -70,21 +73,24 @@ NexisOS targets measurably faster package operations than NixOS by reducing unne
 
 > **Note:** These are architectural design targets. Actual performance will depend on implementation quality and workload characteristics. Benchmarks comparing equivalent operations against NixOS will be published as components reach testable maturity.
 
+</details>
+
 ---
 
 ## 🔒 SELinux & Mandatory Access Control
 
 A core design goal of NexisOS is seamless SELinux support — something fundamentally difficult in NixOS due to hashed store paths that cannot match standard file-context patterns.
 
-### How NexisOS solves this
+<details>
+<summary>How NexisOS solves this</summary>
 
-1. **Projected FHS paths** — Runtime paths like `/usr/bin/ls` and `/usr/lib/libc.so` are presented via erofs generation images compiled from the CAS store. These paths are stable and predictable, so standard SELinux `file_contexts` rules apply directly.
+1. **Projected FHS paths:** Runtime paths like `/usr/bin/ls` and `/usr/lib/libc.so` are presented via erofs generation images compiled from the CAS store. These paths are stable and predictable, so standard SELinux `file_contexts` rules apply directly.
 
-2. **Label-at-build** — SELinux labels are baked into the erofs image at generation build time. The `mkfs.erofs` step reads xattrs from the assembled FHS tree, so labels are present from the moment the image is mounted — no runtime labeling pass needed.
+2. **Label-at-build:** SELinux labels are baked into the erofs image at generation build time. The `mkfs.erofs` step reads xattrs from the assembled FHS tree, so labels are present from the moment the image is mounted — no runtime labeling pass needed.
 
-3. **Policy-as-config** — SELinux policy modules can be declared in TOML alongside package and service definitions, versioned and rolled back with the rest of the system.
+3. **Policy-as-config:** SELinux policy modules can be declared in TOML alongside package and service definitions, versioned and rolled back with the rest of the system.
 
-4. **Immutable store isolation** — The `/store` CAS is not exposed to running processes directly. Only the labeled, projected paths are visible in the process mount namespace, reducing the attack surface.
+4. **Immutable store isolation:** The `/store` CAS is not exposed to running processes directly. Only the labeled, projected paths are visible in the process mount namespace, reducing the attack surface.
 
 ```toml
 # Example: declaring SELinux context for a service
@@ -96,6 +102,8 @@ selinux.file_contexts = [
   { path = "/var/log/nginx(/.*)?", context = "httpd_log_t" },
 ]
 ```
+
+</details>
 
 ---
 
@@ -117,7 +125,7 @@ selinux.file_contexts = [
 
 ---
 
-## ⚙️ Init System — `nexis-init`
+## ⚙️ Init System `nexis-init`
 
 NexisOS uses a custom PID 1 written in Rust, built on a single-threaded `mio`/`epoll` event loop with `pidfd`-based process supervision. The design philosophy is: **implement the protocol interfaces that applications actually talk to, delegate everything else to proven standalone tools.**
 
@@ -145,7 +153,8 @@ PID 1 is the one process that must never crash and must never allocate unexpecte
 
 </details>
 
-### Architecture
+<details>
+<summary>Architecture diagram</summary>
 
 ```
 ┌─────────────────────────────────────────────────────────┐
@@ -201,6 +210,8 @@ External standalone tools (not reimplemented):
   eudev / systemd-udevd → device management
   systemd-modules-load → kernel module loading
 ```
+
+</details>
 
 <details>
 <summary>Core design: pidfd supervision</summary>
@@ -471,7 +482,8 @@ The init is deliberately conservative about dependencies to keep the binary smal
 
 </details>
 
-### `nexisctl` — control interface
+<details>
+<summary><code>nexisctl</code> control interface</summary>
 
 `nexisctl` is a separate binary that communicates with `nexis-init` over a Unix socket (`/run/nexis/control`). It also provides a `systemctl` compatibility shim:
 
@@ -489,6 +501,8 @@ systemctl enable nginx
 ```
 
 The `systemctl` shim is a symlink or thin wrapper that translates systemctl arguments to nexisctl calls. Applications and scripts using `systemctl` work without modification.
+
+</details>
 
 <details>
 <summary>Performance comparison (design targets)</summary>
@@ -615,8 +629,8 @@ NexisOS uses a CAS for **storage and identity** but avoids using it as the runti
 - **Objects** store immutable file data addressed by BLAKE3 content hash. Identical files across packages are stored once.
 - **Packages** reference sets of CAS objects and declare dependency relationships. Each package's tree is laid out in FHS structure (`usr/bin/`, `usr/lib/`, etc.) so it can be composed directly into a generation image.
 - **Deduplication** happens at insert time — the store never needs a global optimization pass.
-- **Metadata DB** — LMDB (Lightning Memory-Mapped Database) with separate named databases for content index (`ContentID → object path`), package metadata (`PackageID → content list, interface hash`), generation history, and build coordination. LMDB is chosen over RocksDB because NexisOS's workload is read-dominant: every `nexis shell` invocation, dependency resolution, and generation activation reads the package index, while writes only occur during package install. LMDB's B+ tree is memory-mapped — reads are a pointer dereference into mmap'd pages with zero serialization overhead and zero reader locking. LMDB transactions are atomic via copy-on-write pages: a failed write never corrupts existing data, eliminating the need for a separate write-ahead log at the database layer.
-- **Crash safety** — LMDB's copy-on-write page semantics provide atomic transactions without a WAL. A package install opens a write transaction, inserts CAS object references and the package manifest, and commits. If the process crashes mid-transaction, the old B+ tree pages are still intact — no orphaned objects, no recovery pass needed.
+- **Metadata DB** LMDB (Lightning Memory-Mapped Database) with separate named databases for content index (`ContentID → object path`), package metadata (`PackageID → content list, interface hash`), generation history, and build coordination. LMDB is chosen over RocksDB because NexisOS's workload is read-dominant: every `nexis shell` invocation, dependency resolution, and generation activation reads the package index, while writes only occur during package install. LMDB's B+ tree is memory-mapped — reads are a pointer dereference into mmap'd pages with zero serialization overhead and zero reader locking. LMDB transactions are atomic via copy-on-write pages: a failed write never corrupts existing data, eliminating the need for a separate write-ahead log at the database layer.
+- **Crash safety** LMDB's copy-on-write page semantics provide atomic transactions without a WAL. A package install opens a write transaction, inserts CAS object references and the package manifest, and commits. If the process crashes mid-transaction, the old B+ tree pages are still intact, no orphaned objects, no recovery pass needed.
 - **Garbage collection** walks committed package manifests to build the live reference set, then removes unreferenced objects.
 
 </details>
@@ -631,9 +645,9 @@ NexisOS uses a CAS for **storage and identity** but avoids using it as the runti
 
 - Each generation is a single **erofs image** compiled from the CAS at build time via `mkfs.erofs`.
 - The image contains the complete FHS tree (`/usr/bin`, `/usr/lib`, `/etc` base layer, etc.) with LZ4 compression.
-- SELinux labels are baked into the erofs image during compilation — xattrs are set on the source tree before `mkfs.erofs` runs.
-- Symlink switch enables **O(1) rollbacks** — switching generations remounts a different erofs image.
-- erofs is read-only by design — no need for `upperdir=none` hacks or mount flags to enforce immutability.
+- SELinux labels are baked into the erofs image during compilation xattrs are set on the source tree before `mkfs.erofs` runs.
+- Symlink switch enables **O(1) rollbacks** switching generations remounts a different erofs image.
+- erofs is read-only by design, no need for `upperdir=none` hacks or mount flags to enforce immutability.
 - Generation images are typically 500MB–2GB compressed (depending on installed packages), and build in 1–5 seconds.
 
 </details>
@@ -643,7 +657,7 @@ NexisOS uses a CAS for **storage and identity** but avoids using it as the runti
 
 NexisOS uses a **two-tier projection model**: erofs for system generations, OverlayFS for ephemeral environments.
 
-#### Tier 1 — erofs (system activation)
+#### Tier 1 erofs (system activation)
 
 At generation build time, the package manager composes all declared packages into a single FHS directory tree, applies SELinux labels, then compiles it into a compressed erofs image:
 
@@ -659,12 +673,12 @@ mount -t erofs /generations/42/rootfs.erofs /system
 
 Why erofs over OverlayFS for system activation:
 
-- **No layer limits** — OverlayFS caps at ~128 lower layers per kernel version. A desktop system with hundreds of packages would require pre-merging layers to stay under the limit. erofs has no such constraint — the entire system is one image.
-- **Immutable by design** — erofs is a read-only filesystem at the kernel level. No need for OverlayFS `upperdir=none` or mount flags to prevent writes.
-- **LZ4 compression** — the generation image is smaller than the sum of its packages on disk. Block-aligned decompression means read performance is near-native.
-- **Single mount** — activation is one `mount` call regardless of how many packages are installed.
-- **SELinux xattr support** — erofs supports extended attributes natively; labels baked in at build time are visible to the running system.
-- **ext4 compatible** — erofs images are regular files on the backing ext4 filesystem. No btrfs, XFS, or special kernel features required beyond `CONFIG_EROFS_FS` (mainline since Linux 5.4).
+- **No layer limits:** OverlayFS caps at ~128 lower layers per kernel version. A desktop system with hundreds of packages would require pre-merging layers to stay under the limit. erofs has no such constraint — the entire system is one image.
+- **Immutable by design:** erofs is a read-only filesystem at the kernel level. No need for OverlayFS `upperdir=none` or mount flags to prevent writes.
+- **LZ4 compression:** the generation image is smaller than the sum of its packages on disk. Block-aligned decompression means read performance is near-native.
+- **Single mount:** activation is one `mount` call regardless of how many packages are installed.
+- **SELinux xattr support:** erofs supports extended attributes natively; labels baked in at build time are visible to the running system.
+- **ext4 compatible:** erofs images are regular files on the backing ext4 filesystem. No btrfs, XFS, or special kernel features required beyond `CONFIG_EROFS_FS` (mainline since Linux 5.4).
 
 #### Tier 2 — OverlayFS (ephemeral environments / `nexis shell`)
 
@@ -693,7 +707,7 @@ This stays well within OverlayFS layer limits (the erofs base counts as one laye
 </details>
 
 <details>
-<summary>Ephemeral Environments — <code>nexis shell</code></summary>
+<summary>Ephemeral Environments <code>nexis shell</code></summary>
 
 NexisOS replaces `nix-shell` with `nexis shell`, an ephemeral development environment system built on **Linux mount namespaces** and **OverlayFS over the erofs system base** instead of building new derivations or copying files.
 
@@ -760,7 +774,7 @@ Run `nexis shell` in a directory with this file and the environment is reconstru
 
 - **HTTP/3 (QUIC)** for low-latency binary fetches.
 - **BitTorrent / IPFS-style replication** for community mirrors and peer distribution.
-- **Delta updates** — only changed CAS objects are transferred, not full packages.
+- **Delta updates** only changed CAS objects are transferred, not full packages.
 
 </details>
 
@@ -788,7 +802,10 @@ Run `nexis shell` in a directory with this file and the environment is reconstru
 
 ## 📁 Profiles & Configuration Directory
 
-NexisOS separates **configuration source** (what you write and version-control) from **runtime state** (what the tooling manages). Profiles are composable configuration layers — the unit of reuse that works identically on a single machine and across a fleet.
+NexisOS separates **configuration source** (what you write and version-control) from **runtime state** (what the tooling manages). Profiles are composable configuration layers, the unit of reuse that works identically on a single machine and across a fleet.
+
+<details>
+<summary>Configuration source, profile structure, and runtime state</summary>
 
 ### Configuration source — `/etc/nexis/`
 
@@ -984,11 +1001,16 @@ Fleet deployment flow:
 
 This means a fleet-wide "deploy" where only one profile changed on a subset of hosts will skip every unaffected machine, rebuild only the changed packages, and produce new erofs images only for the hosts that need them.
 
+</details>
+
 ---
 
-## 🌐 Fleet Orchestration — `nexis fleet`
+## 🌐 Fleet Orchestration `nexis fleet`
 
 NexisOS includes a built-in fleet management system for deploying and managing configurations across many machines from a single declaration. This replaces tools like NixOps, colmena, and deploy-rs with a first-class, integrated solution.
+
+<details>
+<summary>Fleet architecture, declaration, deployment strategies, and commands</summary>
 
 ### Architecture
 
@@ -1096,6 +1118,8 @@ nexis fleet diff web-01 web-02   # compare effective configs between hosts
 nexis fleet sync-profiles        # push /etc/nexis/profiles/ to all hosts from config_repo
 ```
 
+</details>
+
 ---
 
 ## 📂 Repository Structure
@@ -1121,10 +1145,10 @@ ISO builds will be available on SourceForge once the first release is ready:
 <details>
 <summary>Projects that inspired or support NexisOS</summary>
 
-- **NixOS** — Declarative system configuration and reproducible builds
-- **Rust community** — Language powering the package manager and init system
-- **mio** & **zbus** — Event loop and D-Bus crates enabling a minimal, correct PID 1
-- **Security projects** — SELinux, ClamAV, R-FX Networks's LMD, Tetragon, Suricata, nftables
+- **NixOS:** Declarative system configuration and reproducible builds
+- **Rust community:** Language powering the package manager and init system
+- **mio** & **zbus:** Event loop and D-Bus crates enabling a minimal, correct PID 1
+- **Security projects:** SELinux, ClamAV, R-FX Networks's LMD, Tetragon, Suricata, nftables
 - The broader **Linux and open-source communities** for foundational tools and libraries
 
 </details>
@@ -1159,4 +1183,4 @@ Users, integrators, and redistributors are solely responsible for ensuring compl
 
 NexisOS will be publishing an open letter requesting technical clarification and
 standards coordination regarding operating-system-level age assurance
-requirements affecting decentralized open-source systems.
+requirements affecting decentralized open-source systems to respective legislators, relevant regulatory and standards bodies.
