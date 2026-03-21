@@ -1126,9 +1126,53 @@ nexis fleet sync-profiles        # push /etc/nexis/profiles/ to all hosts from c
 
 | Repository | Purpose |
 | :--------- | :------ |
-| **nexisos-init** | `nexis-init` (PID 1) and `nexisctl` — Rust-based init system with pidfd supervision and systemd compatibility |
-| **nexisos-installer** | Minimal TUI-based installer ISO with WiFi support |
-| **nexisos-packages** | Core distribution packages bootstrapped/downloaded by the installer |
+| **nexisos-bootstrap** | Core distribution packages bootstrapped/downloaded by the installer |
+| **nexisos-installer-iso** | Minimal TUI-based installer ISO with WiFi support |
+
+### 📦 nexisos-bootstrap
+
+<details>
+<summary>Click to see</summary>
+
+```text
+nexisos-bootstrap/
+├── nexis_common/   # Shared utilities and core logic
+├── nexis_init/     # System initialization components
+├── nexis_pm/       # Package manager (core logic, tests, benches)
+├── nexis_scan/     # System and package scanning utilities
+├── Cargo.toml      # Rust workspace definition
+└── diagram1.puml   # Architecture diagram
+```
+
+</details>
+
+### 💿 nexisos-installer-iso
+
+<details>
+<summary>Click to see</summary>
+
+```text
+nexisos-installer-iso/
+├── buildroot/        # Buildroot (git submodule, ISO base system)
+├── distroConfigs/    # NexisOS-specific configs and overlays
+│   ├── overlay/      # Root filesystem overlay
+│   ├── scripts/      # Build and install helper scripts
+│   └── buildroot-packages/
+├── installer/        # Rust-based TUI installer
+├── createdISOs/      # Generated ISO output
+├── Makefile          # Build entrypoint
+└── shell.nix         # Development environment
+```
+
+### 🔧 Setup
+
+This repository uses git submodules.
+git clone --recurse-submodules https://github.com/NexisOS/nexisos-installer-iso
+
+**Or if already cloned:**
+git submodule update --init --recursive
+
+</details>
 
 ---
 
