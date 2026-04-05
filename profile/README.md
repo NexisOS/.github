@@ -6,7 +6,7 @@
 
 NexisOS is a free and open-source Linux distribution focused on **transparency, control, reproducibility, and high performance** through declarative configuration. Built around a custom package manager and a custom init system (`nexis-init`) using TOML files for system configuration, NexisOS takes a NixOS-inspired approach with fundamental design changes targeting faster rebuilds, native SELinux integration, pidfd-based process supervision, and compatibility with the standard Linux filesystem hierarchy.
 
-Core components are written in **C** and built with **Meson + Ninja**.
+Core components are written in **Rust** and organized as a **Cargo workspace**.
 
 ---
 
@@ -22,7 +22,7 @@ NexisOS is in **early development and not yet in pre-alpha release**. Core archi
 
 </div>
 
-## 📥 Download
+## Download
 
 ISO builds will be available on SourceForge once the first release is ready:
 
@@ -30,7 +30,7 @@ ISO builds will be available on SourceForge once the first release is ready:
 
 ---
 
-## 💡 Motivation: Why Not NixOS?
+## Motivation: Why Not NixOS?
 
 NixOS demonstrated that declarative, reproducible system management is viable at scale. NexisOS builds on that insight while rearchitecting the layers where NixOS introduces friction — particularly around rebuild performance, filesystem compatibility, and mandatory access control.
 
@@ -50,14 +50,14 @@ NixOS demonstrated that declarative, reproducible system management is viable at
 
 ---
 
-## 🏗️ Key Design Principles
+## Key Design Principles
 
 - **Declarative Configuration:** System and package management through TOML files with schema validation; no DSL required.
 - **Graph-Aware Package Identity:** Two-level hashing (`BuildHash` for the package itself, `InterfaceHash` for dependent rebuild decisions) minimizes rebuild cascades to only what changed at the ABI boundary.
 - **Atomic Rollbacks:** Generation symlink switching (O(1)) rather than full filesystem snapshots.
 - **Immutable Store / erofs Projection:** Content-addressed store on ext4 with immutable objects; generations compiled into compressed erofs images mounted as the root filesystem (`/system`), carrying proper SELinux labels.
 - **Native SELinux Integration:** SELinux is a first-class citizen; file contexts are baked into erofs images at generation build time.
-- **pidfd-Based Init:** Custom PID 1 (`nexis-init`) written in C, built on a single-threaded `epoll` event loop with `pidfd` process supervision, `sd_notify` and socket activation protocol support, and a `org.freedesktop.systemd1` D-Bus compatibility layer via `sd-bus`.
+- **pidfd-Based Init:** Custom PID 1 (`nexis-init`) written in Rust, built on a single-threaded async event loop with `pidfd` process supervision, `sd_notify` and socket activation protocol support, and a `org.freedesktop.systemd1` D-Bus compatibility layer.
 
 ---
 
@@ -81,7 +81,7 @@ NexisOS targets measurably faster package operations than NixOS by reducing unne
 | **Filesystem activation** | Materializes symlink forests per generation | erofs image per generation — single `mount` activates the entire system |
 | **Dev environment entry** | `nix-shell`: evaluates expression, builds derivation, creates gcroot (2–15s cached) | `nexis shell`: OverlayFS namespace injection over erofs base (<100ms cached) |
 | **Boot: process supervision** | systemd: SIGCHLD + cgroup notification + PID tracking | `nexis-init`: pidfd via epoll — O(1) per exit event, zero signal handler overhead |
-| **Boot: PID 1 footprint** | systemd: ~12 MB RSS, owns cgroups/journald/udev/logind | `nexis-init`: <2 MB RSS, single-threaded epoll loop, delegates to standalone tools |
+| **Boot: PID 1 footprint** | systemd: ~12 MB RSS, owns cgroups/journald/udev/logind | `nexis-init`: <2 MB RSS, single-threaded event loop, delegates to standalone tools |
 | **Compression** | NAR format with xz/zstd | Hybrid chunking with Zstd (ratio) or LZ4 (speed) selected per content type |
 | **Large store scaling** | Linear scans for GC and queries | LMDB mmap'd B+ tree for sub-linear lookups; optional bloom filters for content-hash existence checks |
 
@@ -91,7 +91,7 @@ NexisOS targets measurably faster package operations than NixOS by reducing unne
 
 ---
 
-## 🔒 SELinux & Security
+## SELinux & Security
 
 A core design goal is seamless SELinux support — something fundamentally difficult in NixOS due to hashed store paths that cannot match standard file-context patterns.
 
@@ -132,9 +132,9 @@ selinux.file_contexts = [
 
 ---
 
-## ⚙️ Init System — `nexis-init`
+## Init System — `nexis-init`
 
-NexisOS uses a custom PID 1 written in C, built on a single-threaded `epoll` event loop with `pidfd`-based process supervision. The design philosophy is: **implement the protocol interfaces that applications actually talk to, delegate everything else to proven standalone tools.**
+NexisOS uses a custom PID 1 written in Rust, built on a single-threaded async event loop with `pidfd`-based process supervision. The design philosophy is: **implement the protocol interfaces that applications actually talk to, delegate everything else to proven standalone tools.**
 
 <details>
 <summary>Why not an existing init?</summary>
@@ -155,46 +155,46 @@ Every existing init would require a compatibility shim, a cgroups manager, and a
 <summary>Architecture diagram</summary>
 
 ```
-┌─────────────────────────────────────────────────────────┐
-│                nexis-init (PID 1)                       │
-│                                                         │
-│                epoll event loop                         │
-│                                                         │
-│    ┌─────────┐ ┌──────────┐ ┌─────────┐ ┌───────────┐  │
-│    │ pidfd   │ │ signalfd │ │ timerfd │ │ notify    │  │
-│    │ (child  │ │ (SIGTERM │ │ (watch- │ │ socket    │  │
-│    │  exits) │ │  SIGINT) │ │  dogs)  │ │ (sd_notify│  │
-│    └────┬────┘ └────┬─────┘ └─────────┘ │  proto)   │  │
-│         │           │                   └─────┬─────┘  │
-│    ┌────┴───┐  ┌────┴──────┐            ┌─────┴─────┐  │
-│    │ D-Bus  │  │ control   │            │ socket    │  │
-│    │ socket │  │ socket    │            │ activation│  │
-│    │(sd-bus)│  │(nexisctl) │            │ (LISTEN_  │  │
-│    └────────┘  └───────────┘            │  FDS)     │  │
-│                                         └───────────┘  │
-│                                                         │
-│  ┌──────────────────────┐  ┌──────────────────────────┐ │
-│  │  Service Supervisor  │  │  Dependency Graph Engine │ │
-│  │  • clone3(CLONE_PIDFD│  │  • Topological sort      │ │
-│  │  • cgroups v2 place  │  │  • Parallel startup      │ │
-│  │  • namespace setup   │  │  • Before=/After=/       │ │
-│  │  • SELinux transition│  │    Requires=/Wants=      │ │
-│  │  • seccomp loading   │  │  • Target grouping       │ │
-│  │  • capability drop   │  │  • Socket-activation     │ │
-│  │  • restart policy    │  │    ordering              │ │
-│  └──────────────────────┘  └──────────────────────────┘ │
-│                                                         │
-│  ┌──────────────────────┐  ┌──────────────────────────┐ │
-│  │  Unit File Parser    │  │  Compatibility Layer     │ │
-│  │  • Reads systemd     │  │  • org.freedesktop.      │ │
-│  │    [Unit], [Service], │  │    systemd1 D-Bus API   │ │
-│  │    [Install], [Timer]│  │    (subset via sd-bus)   │ │
-│  │  • Reads TOML service│  │  • sd_notify protocol    │ │
-│  │    declarations      │  │  • LISTEN_FDS socket     │ │
-│  │  • Both compile to   │  │    activation            │ │
-│  │    same internal repr│  │  • /run/systemd/ state   │ │
-│  └──────────────────────┘  └──────────────────────────┘ │
-└─────────────────────────────────────────────────────────┘
+┌───────────────────────────────────────────────────────────┐
+│                nexis-init (PID 1)                         │
+│                                                           │
+│                async event loop                           │
+│                                                           │
+│    ┌─────────┐ ┌──────────┐ ┌─────────┐ ┌───────────┐     │
+│    │ pidfd   │ │ signalfd │ │ timerfd │ │ notify    │     │
+│    │ (child  │ │ (SIGTERM │ │ (watch- │ │ socket    │     │
+│    │  exits) │ │  SIGINT) │ │  dogs)  │ │ (sd_notify│     │
+│    └────┬────┘ └────┬─────┘ └─────────┘ │  proto)   │     │
+│         │           │                   └─────┬─────┘     │
+│    ┌────┴───┐  ┌────┴──────┐            ┌─────┴─────┐     │
+│    │ D-Bus  │  │ control   │            │ socket    │     │
+│    │ socket │  │ socket    │            │ activation│     │
+│    │        │  │(nexisctl) │            │ (LISTEN_  │     │
+│    └────────┘  └───────────┘            │  FDS)     │     │
+│                                         └───────────┘     │
+│                                                           │
+│  ┌──────────────────────────┐  ┌────────────────────────┐ │
+│  │  Service Supervisor      │  │ Dependency Graph Engine│ │
+│  │  • clone3(CLONE_PIDFD)   │  │ • Topological sort     │ │
+│  │  • cgroups v2 placement  │  │ • Parallel startup     │ │
+│  │  • namespace setup       │  │ • Before=/After=/      │ │
+│  │  • SELinux transition    │  │   Requires=/Wants=     │ │
+│  │  • seccomp loading       │  │ • Target grouping      │ │
+│  │  • capability drop       │  │ • Socket-activation    │ │
+│  │  • restart policy        │  │   ordering             │ │
+│  └──────────────────────────┘  └────────────────────────┘ │
+│                                                           │
+│  ┌──────────────────────────┐  ┌────────────────────────┐ │
+│  │  Unit File Parser        │  │ Compatibility Layer    │ │
+│  │  • Reads systemd         │  │ • org.freedesktop.     │ │
+│  │    [Unit], [Service],    │  │   systemd1 D-Bus API   │ │
+│  │    [Install], [Timer]    │  │ • sd_notify protocol   │ │
+│  │  • Reads TOML service    │  │ • LISTEN_FDS socket    │ │
+│  │    declarations          │  │   activation           │ │
+│  │  • Both compile to       │  │ • /run/systemd/ state  │ │
+│  │    same internal repr    │  │                        │ │
+│  └──────────────────────────┘  └────────────────────────┘ │
+└───────────────────────────────────────────────────────────┘
 
 External standalone tools (not reimplemented):
   systemd-tmpfiles    → /tmp, /run directory setup
@@ -211,32 +211,33 @@ External standalone tools (not reimplemented):
 
 Traditional inits track child processes via `SIGCHLD` + `waitpid`, which is inherently racy — the PID can be reused between the signal delivery and the wait call. NexisOS uses `clone3()` with `CLONE_PIDFD` to get a stable file descriptor for each child process at spawn time.
 
-```c
-/* Simplified core loop structure */
-int main(void) {
-    int epfd = epoll_create1(EPOLL_CLOEXEC);
+```rust
+// Simplified core loop structure (src/core/event_loop.rs)
+fn run(state: &mut InitState) -> Result<()> {
+    let epoll = Epoll::new()?;
 
-    /* Register all FD sources with epoll */
-    int sig_fd  = signalfd(-1, &sigmask, SFD_CLOEXEC);
-    int notify  = bind_notify_socket("/run/nexis/notify");
-    int control = bind_control_socket("/run/nexis/control");
-    int dbus_fd = sd_bus_get_fd(bus);
+    // Register all FD sources with epoll
+    let sig_fd  = SignalFd::new(&[Signal::SIGTERM, Signal::SIGINT])?;
+    let notify  = NotifySocket::bind("/run/nexis/notify")?;
+    let control = ControlSocket::bind("/run/nexis/control")?;
+    let dbus    = DbusConnection::system()?;
 
-    epoll_ctl(epfd, EPOLL_CTL_ADD, sig_fd,  &(struct epoll_event){.events=EPOLLIN, .data.fd=sig_fd});
-    epoll_ctl(epfd, EPOLL_CTL_ADD, notify,  &(struct epoll_event){.events=EPOLLIN, .data.fd=notify});
-    epoll_ctl(epfd, EPOLL_CTL_ADD, control, &(struct epoll_event){.events=EPOLLIN, .data.fd=control});
-    epoll_ctl(epfd, EPOLL_CTL_ADD, dbus_fd, &(struct epoll_event){.events=EPOLLIN, .data.fd=dbus_fd});
+    epoll.add(sig_fd.as_raw_fd(), Token::Signal)?;
+    epoll.add(notify.as_raw_fd(), Token::Notify)?;
+    epoll.add(control.as_raw_fd(), Token::Control)?;
+    epoll.add(dbus.as_raw_fd(), Token::Dbus)?;
 
-    struct epoll_event events[64];
-    for (;;) {
-        int n = epoll_wait(epfd, events, 64, -1);
-        for (int i = 0; i < n; i++) {
-            int fd = events[i].data.fd;
-            if      (fd == sig_fd)  handle_signal(sig_fd);
-            else if (fd == notify)  handle_sd_notify(notify, services);
-            else if (fd == control) handle_control_command(control, services);
-            else if (fd == dbus_fd) handle_dbus_message(bus, services);
-            else                    handle_pidfd_exit(fd, services, epfd);
+    let mut events = Events::with_capacity(64);
+    loop {
+        epoll.wait(&mut events, None)?;
+        for event in &events {
+            match event.token() {
+                Token::Signal  => handle_signal(&sig_fd, state)?,
+                Token::Notify  => handle_sd_notify(&notify, state)?,
+                Token::Control => handle_control_command(&control, state)?,
+                Token::Dbus    => handle_dbus_message(&dbus, state)?,
+                Token::Pidfd(id) => handle_pidfd_exit(id, state, &epoll)?,
+            }
         }
     }
 }
@@ -244,32 +245,32 @@ int main(void) {
 
 Each spawned service gets a pidfd registered with epoll:
 
-```c
-struct service_handle spawn_service(const struct service_config *svc, int epfd) {
-    struct clone_args args = {
-        .flags = CLONE_PIDFD,
-        .pidfd = (uint64_t)&pidfd,
-    };
-    pid_t pid = syscall(SYS_clone3, &args, sizeof(args));
+```rust
+// Simplified service spawn (src/core/service.rs)
+fn spawn_service(svc: &ServiceConfig, epoll: &Epoll) -> Result<ServiceHandle> {
+    let mut args = CloneArgs::new();
+    args.flags(CloneFlags::CLONE_PIDFD);
 
-    if (pid == 0) {
-        /* Child: set up sandbox before exec */
-        enter_cgroup(svc->cgroup_path);
-        apply_seccomp_filter(svc->seccomp_profile);
-        set_selinux_context(svc->selinux_type);
-        drop_capabilities(svc->ambient_caps);
-        if (svc->namespaces)
-            enter_namespaces(svc->namespaces);
-        execve(svc->exec_path, svc->argv, svc->envp);
-        _exit(127);
+    let (pid, pidfd) = clone3(&args)?;
+
+    if pid == 0 {
+        // Child: set up sandbox before exec
+        enter_cgroup(&svc.cgroup_path)?;
+        apply_seccomp_filter(&svc.seccomp_profile)?;
+        set_selinux_context(&svc.selinux_type)?;
+        drop_capabilities(&svc.ambient_caps)?;
+        if let Some(ns) = &svc.namespaces {
+            enter_namespaces(ns)?;
+        }
+        exec::execve(&svc.exec_path, &svc.argv, &svc.envp)?;
+        std::process::exit(127);
     }
 
-    /* Register pidfd with epoll — notified exactly when this
-       specific process exits, no PID-reuse races possible */
-    epoll_ctl(epfd, EPOLL_CTL_ADD, pidfd,
-              &(struct epoll_event){.events=EPOLLIN, .data.fd=pidfd});
+    // Register pidfd with epoll — notified exactly when this
+    // specific process exits, no PID-reuse races possible
+    epoll.add(pidfd.as_raw_fd(), Token::Pidfd(svc.id))?;
 
-    return (struct service_handle){ .pid=pid, .pidfd=pidfd, .config=svc };
+    Ok(ServiceHandle { pid, pidfd, config: svc.clone() })
 }
 ```
 
@@ -286,10 +287,10 @@ When the pidfd becomes readable, the process has exited. No signal handler, no r
 
 | Interface | What expects it | Implementation |
 | :-------- | :-------------- | :------------- |
-| **`sd_notify`** protocol | Services using `Type=notify` (PostgreSQL, nginx, etc.) | Unix datagram socket at `/run/nexis/notify`; parses `READY=1`, `STATUS=`, `MAINPID=`, `WATCHDOG=1`. ~200 lines. |
-| **Socket activation** (`LISTEN_FDS`) | Services expecting pre-opened sockets | Init opens sockets, passes FDs to child via `LISTEN_FDS` + `LISTEN_PID` env vars. ~300 lines. |
-| **`org.freedesktop.systemd1`** D-Bus API | `systemctl`, desktop environments, Cockpit, monitoring tools | Subset via `sd-bus`: `ListUnits`, `StartUnit`, `StopUnit`, `RestartUnit`, `GetUnit`, property queries. ~1000 lines for the 80% case. |
-| **`/run/systemd/` state layout** | Tools that read PID files or check system state | Symlinked: `/run/systemd/notify` → `/run/nexis/notify`, state files written to expected paths. ~50 lines. |
+| **`sd_notify`** protocol | Services using `Type=notify` (PostgreSQL, nginx, etc.) | Unix datagram socket at `/run/nexis/notify`; parses `READY=1`, `STATUS=`, `MAINPID=`, `WATCHDOG=1` |
+| **Socket activation** (`LISTEN_FDS`) | Services expecting pre-opened sockets | Init opens sockets, passes FDs to child via `LISTEN_FDS` + `LISTEN_PID` env vars |
+| **`org.freedesktop.systemd1`** D-Bus API | `systemctl`, desktop environments, Cockpit, monitoring tools | Subset via D-Bus: `ListUnits`, `StartUnit`, `StopUnit`, `RestartUnit`, `GetUnit`, property queries — covers the 80% case |
+| **`/run/systemd/` state layout** | Tools that read PID files or check system state | Symlinked: `/run/systemd/notify` → `/run/nexis/notify`, state files written to expected paths |
 
 </details>
 
@@ -363,19 +364,18 @@ kernel → nexis-init (PID 1)
 </details>
 
 <details>
-<summary>C library dependencies</summary>
+<summary>Crate dependencies</summary>
 
 The init is deliberately conservative about dependencies to keep the binary small, auditable, and predictable:
 
-| Library | Purpose | Why this one |
-| :------ | :------ | :----------- |
-| Linux `epoll` | Event loop | Direct syscall, no wrapper overhead, no runtime |
-| `sd-bus` (from `systemd`) | D-Bus systemd1 API | Mature, well-tested C library; avoids pulling `libdbus` |
-| Linux syscalls | `clone3`, `pidfd_open`, `signalfd`, `timerfd`, cgroups, namespaces, `mount` | Direct syscall wrappers via thin internal helpers |
-| `toml-c` (or equivalent) | Parse TOML service declarations | Lightweight TOML parser for C |
-| `syslog` | Logging to kernel ring buffer and syslog | Standard POSIX interface |
+| Crate / API | Purpose | Why this one |
+| :---------- | :------ | :----------- |
+| Linux `epoll` | Event loop | Direct syscall wrappers via `rustix` or `nix` crate, no runtime overhead |
+| `zbus` or `dbus` crate | D-Bus systemd1 API | Pure Rust D-Bus implementation; avoids C `libdbus` dependency |
+| Linux syscalls | `clone3`, `pidfd_open`, `signalfd`, `timerfd`, cgroups, namespaces, `mount` | Direct syscall wrappers via `rustix` |
+| `toml` crate | Parse TOML service declarations | Standard Rust TOML parser (serde-based) |
 
-**Not used:** `libevent`/`libev` (unnecessary abstraction over epoll), `libcurl` (no HTTP needed in PID 1).
+**Not used:** `tokio` (unnecessary async runtime for a single-threaded PID 1), `libcurl` (no HTTP needed in PID 1).
 
 </details>
 
@@ -419,7 +419,7 @@ This inverts the typical Linux init model where services run with full privilege
 
 ---
 
-## 🛠️ Package Manager Architecture
+## Package Manager Architecture
 
 <details>
 <summary>View package installation flow</summary>
@@ -546,7 +546,7 @@ postgresql = { exec = "pg_ctl start -D $PGDATA", stop = "pg_ctl stop -D $PGDATA"
 
 ---
 
-## 🔒 Filesystem Access Policy
+## Filesystem Access Policy
 
 <details>
 <summary>View directory mutability table</summary>
@@ -566,7 +566,7 @@ postgresql = { exec = "pg_ctl start -D $PGDATA", stop = "pg_ctl stop -D $PGDATA"
 
 ---
 
-## 📁 Profiles & Configuration
+## Profiles & Configuration
 
 NexisOS separates **configuration source** (what you write and version-control) from **runtime state** (what the tooling manages). Profiles are composable configuration layers that work identically on a single machine and across a fleet.
 
@@ -627,7 +627,7 @@ nexis profile diff +server -gaming         # preview changes without building
 
 ---
 
-## 🌐 Fleet Orchestration — `nexis fleet`
+## Fleet Orchestration — `nexis fleet`
 
 NexisOS includes built-in fleet management for deploying configurations across many machines from a single declaration, replacing tools like NixOps, colmena, and deploy-rs.
 
@@ -674,15 +674,13 @@ nexis fleet diff web-01 web-02     # compare effective configs between hosts
 
 ---
 
-## 🙏 Acknowledgments
+## Acknowledgments
 
 <details>
 <summary>Projects that inspired or support NexisOS</summary>
 
 - **NixOS:** Declarative system configuration and reproducible builds
-- **C ecosystem:** Language powering the package manager and init system
-- **Meson + Ninja:** Build system providing fast, correct builds
-- **sd-bus:** D-Bus library enabling the systemd1 compatibility layer
+- **Rust ecosystem:** Language and toolchain powering all core NexisOS components
 - **Security projects:** SELinux, ClamAV, R-FX Networks's LMD, Tetragon, Suricata, nftables
 - The broader **Linux and open-source communities** for foundational tools and libraries
 
@@ -690,19 +688,19 @@ nexis fleet diff web-01 web-02     # compare effective configs between hosts
 
 ---
 
-## 📢 Community & Support
+## Community & Support
 
 As a personal project by a single maintainer, community channels are coming soon. For now, use [GitHub Issues](https://github.com/NexisOS/issues) for bugs, features, and ideas. GitHub Discussions and an official community forum/chat are planned.
 
 ---
 
-## 📬 Contact
+## Contact
 
 **Email**: [kyle.gortych.dev@gmail.com](mailto:kyle.gortych.dev@gmail.com) — Please use GitHub Issues for general inquiries. As the sole maintainer, response times may vary.
 
 ---
 
-## ⚖️ Disclaimer
+## Disclaimer
 
 NexisOS is an independent, community-driven project currently maintained by an individual developer. It is not affiliated with the Linux Foundation, NixOS Foundation, or any other referenced projects. All trademarks belong to their respective owners and are used solely for identification.
 
